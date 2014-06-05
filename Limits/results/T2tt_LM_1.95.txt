@@ -1,0 +1,9 @@
+
+ -- Asymptotic -- 
+Expected  2.5%: r < 7.4496
+Expected 16.0%: r < 11.3949
+Expected 50.0%: r < 20.2344
+Expected 84.0%: r < 40.7208
+Expected 97.5%: r < 61.3672
+
+Done in 0.00 min (cpu), 0.00 min (real)
