@@ -4,9 +4,12 @@ import ROOT
 
 from ROOT import TH1F
 
-import sys, os, commands, math
+import sys, os, commands, math, ast
 
-def scan(template):
+def scan(file, blind):
+
+    failure, output = commands.getstatusoutput('basename "%s"' %file)
+    template = output
 
     # base name for the datacard based on the template
     inputbase =  "scenarios/"+template[0:len(template)-4]
@@ -23,14 +26,19 @@ def scan(template):
         
         # prepare the specific data card
         input = inputbase+"_"+str(i)+".txt"
-        sed = "sed 's,1.XX,{0:.2f},g'  {1:s} > {2:s}".format(i,template,input)
+        sed = "sed 's,1.XX,{0:.2f},g'  {1:s} > {2:s}".format(i,file,input)
         commands.getstatusoutput(sed)
         
         output = outputbase+"_"+str(i)+".txt"
+        blindOption = "--run blind" if blind else ""
         #run_limits =  "combine -M HybridNew --rule CLs --testStat=LHC --generateNuis=0 --fitNuis=0 --generateExt=1 {0:s} > {1:s}".format(input,output)
-        run_limits = "combine -M Asymptotic --rMax 100 --run blind  {0:s} > {1:s}".format(input,output)
+        run_limits = "combine -M Asymptotic --rMax 100 {0:s} {1:s} > {2:s}".format(blindOption, input, output)
         print run_limits
         commands.getstatusoutput(run_limits)
+
+
+# Run blind if nothing is specified, otherwise produce observed limits too
+blind = ast.literal_eval(sys.argv[1]) if len(sys.argv) == 2 else True
 
 
 # Get the templates
@@ -50,7 +58,7 @@ if not os.path.exists(results):
 
 # Do the scan!
 for file in files:
-    scan(file)
+    scan(file, blind)
 
 commands.getstatusoutput("rm roostats-*")
 commands.getstatusoutput("rm higgsCombineTest.Asymptotic.mH120.root")
