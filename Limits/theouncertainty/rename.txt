@@ -1,0 +1,2 @@
+for f in T2TT*.root; do echo ${f:5}; mv $f T2tt${f:4}; done
+for f in T2BW*.root; do echo ${f:5}; mv $f T2bw${f:4}; done

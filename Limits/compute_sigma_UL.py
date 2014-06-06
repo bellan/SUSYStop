@@ -31,7 +31,7 @@ def calculatedSigma_UL(model, scenarioX, region, polschema):
 
     # polarization inputs
     #fPolName = "Polarization/pol_"+model+"_"+scenarioX+"_"+polschema+"_Had.root"
-    fPolName = "Polarization/pol_"+model+"_"+scenarioX+"_"+polschema+".root"
+    fPolName = "polarization/pol_"+model+"_"+scenarioX+"_"+polschema+".root"
 
     fPol = ROOT.TFile(fPolName)
     hL_ratio = fPol.Get(model.upper()+"_"+region+"__VARIATIONAXIS_Down_ratio") # FIXME 
