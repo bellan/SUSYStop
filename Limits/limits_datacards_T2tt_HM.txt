@@ -1,0 +1,33 @@
+## RB 20130410 ##
+
+##### Cards for direct stop search. 7 TeV dataset ####
+
+### LOW Njets region ###
+# (njets >= 5 and met >= 200.) or (njets >= 7 and met >= 175.)
+
+imax 1 number of channels
+jmax 4 number of backgrounds
+kmax 6 number of nuisance parameters (sources of systematical uncertainties)
+---------------------
+
+##### Observations ####
+
+bin 1
+observation 1
+---------------------
+
+#### Signal-Backgorund predictions ####
+
+bin                   	 1       1	1	1	1
+process        	      Sign     ttbarWo	Znunu	ttZ	QCD
+process		      	 0       1	2	3	4
+rate           	      	 1	 2.55	1.86	1.62	0.04
+
+---------------------
+
+total_Signal	lnN   1.XX	-	-	-	-
+lumi		lnN   1.026	-	-	-	-
+ttbarWo		lnN	-	1.35	-	-	-
+Znunu		lnN	-	-	1.44	-	-
+ttZ		lnN	-	-	-	1.36	-
+QCD		lnN	-	-	-	-	1.49
