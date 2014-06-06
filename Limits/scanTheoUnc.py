@@ -34,7 +34,7 @@ def scan(template):
 
 
 # Get the templates
-ls = "ls limits_datacards_*.txt"
+ls = "ls datacards/limits_datacards_*.txt"
 failure,output =  commands.getstatusoutput(ls)
 files = output.splitlines()
 
@@ -51,3 +51,6 @@ if not os.path.exists(results):
 # Do the scan!
 for file in files:
     scan(file)
+
+commands.getstatusoutput("rm roostats-*")
+commands.getstatusoutput("rm higgsCombineTest.Asymptotic.mH120.root")
