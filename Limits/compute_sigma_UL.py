@@ -166,7 +166,8 @@ for model in models:
         histos = []
         histos1p = []
         histos1m = []
-
+        histosObs = []
+        
         histosL = []
         histosR = []
         
@@ -174,9 +175,10 @@ for model in models:
             f = ROOT.TFile(str(model)+"_"+str(scenarioX)+"_"+str(region)+"_sigma_UL.root")
             #print str(model),str(scenarioX),str(region)
             
-            histos.append(copy.deepcopy(  f.Get(model+"_expected_xsection_UL")))
-            histos1p.append(copy.deepcopy(f.Get(model+"_expected_p1s_xsection_UL")))
-            histos1m.append(copy.deepcopy(f.Get(model+"_expected_m1s_xsection_UL")))
+            histos.   append(copy.deepcopy(f.Get(model+"_expected_xsection_UL")))
+            histos1p. append(copy.deepcopy(f.Get(model+"_expected_p1s_xsection_UL")))
+            histos1m. append(copy.deepcopy(f.Get(model+"_expected_m1s_xsection_UL")))
+            histosObs.append(copy.deepcopy(f.Get(model+"_observed_xsection_UL")))
 
             histosL.append(copy.deepcopy(f.Get(model+"_expected_L_xsection_UL")))
             histosR.append(copy.deepcopy(f.Get(model+"_expected_R_xsection_UL")))
@@ -191,8 +193,8 @@ for model in models:
         best1m = best.Clone(str(model)+"_"+str(scenarioX)+"_expected_m1s_xsection_UL")
         best1m.SetTitle    (str(model)+"_"+str(scenarioX)+"_expected_m1s_xsection_UL")
 
-        obs = best.Clone(str(model)+"_"+str(scenarioX)+"_observed_xsection_UL")
-        obs.SetTitle    (str(model)+"_"+str(scenarioX)+"_observed_xsection_UL")
+        bestobs = best.Clone(str(model)+"_"+str(scenarioX)+"_observed_xsection_UL")
+        bestobs.SetTitle    (str(model)+"_"+str(scenarioX)+"_observed_xsection_UL")
 
         #polarizations
         bestL = best.Clone(str(model)+"_"+str(scenarioX)+"_expected_L_xsection_UL")
@@ -216,6 +218,7 @@ for model in models:
                 best.SetBinContent(x,y,histos[bestregion].GetBinContent(x,y))
                 best1p.SetBinContent(x,y,histos1p[bestregion].GetBinContent(x,y))
                 best1m.SetBinContent(x,y,histos1m[bestregion].GetBinContent(x,y))
+                bestobs.SetBinContent(x,y,histosObs[bestregion].GetBinContent(x,y))
         
                 bestL.SetBinContent(x,y,histosL[bestregion].GetBinContent(x,y))
                 bestR.SetBinContent(x,y,histosR[bestregion].GetBinContent(x,y))
@@ -229,7 +232,7 @@ for model in models:
         best.Write()
         best1p.Write()
         best1m.Write()
-        obs.Write()
+        bestobs.Write()
         bestregionP.Write()
 
         bestL.Write()

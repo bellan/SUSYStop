@@ -33,14 +33,15 @@ void addExcludedRegions(TString model = "T2tt", TString scenarioX = "", TString 
 
   TFile *file  = new TFile(model+"_"+scenarioX+"_"+pol+"_sigma_UL_bestexpected.root","UPDATE");
   
-  TString variants[] = {"","p1s","m1s","L","R"};
+  TString variants[] = {"","p1s","m1s","L","R","obs"};
   int size = sizeof(variants)/sizeof(TString);
   
   for(int i=0; i<size; ++i){
 
     TString input = "_expected_";
     if (variants[i] != "") input = input + variants[i] + "_";
-    
+    if (variants[i] == "obs") input = "_observed_";
+
     // Get the expected UL xsection
     TH2F* hlimit_exp     = (TH2F*)file->Get(model + "_" + scenarioX + input + "xsection_UL");
 
