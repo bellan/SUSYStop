@@ -33,14 +33,13 @@ void addExcludedRegions(TString model = "T2tt", TString scenarioX = "", TString 
 
   TFile *file  = new TFile(model+"_"+scenarioX+"_"+pol+"_sigma_UL_bestexpected.root","UPDATE");
   
-  TString variants[] = {"","p1s","m1s","L","R","obs"};
+  TString variants[] = {"","p1s","m1s","L","R"};
   int size = sizeof(variants)/sizeof(TString);
   
   for(int i=0; i<size; ++i){
 
     TString input = "_expected_";
     if (variants[i] != "") input = input + variants[i] + "_";
-    if (variants[i] == "obs") input = "_observed_";
 
     // Get the expected UL xsection
     TH2F* hlimit_exp     = (TH2F*)file->Get(model + "_" + scenarioX + input + "xsection_UL");
@@ -55,6 +54,29 @@ void addExcludedRegions(TString model = "T2tt", TString scenarioX = "", TString 
     exclusion.second->SetTitle(model+"_"+scenarioX+input+"strength_UL");
     exclusion.second->Write(model+"_"+scenarioX+input+"strength_UL");
   }
+  
+
+  // Produce now the observed histos and graphs 
+  // Get the expected UL xsection
+  TH2F* hlimit_exp     = (TH2F*)file->Get(model + "_" + scenarioX + "_observed_xsection_UL");
+  
+  // Produce the limits for +-1 sigma_theo together with the central value
+  for(int i = -1; i <= 1 ; ++i){
+    
+    pair<TH2F*,TH2F*> exclusion = getExcludedPoints(hlimit_exp, i, 1., normalize);
+    
+    TString input = "_observed_";
+    if(i == 1 ) input = input + "p1s_";
+    if(i == -1) input = input + "m1s_";
+
+    file->cd();
+    embellish(exclusion.first, "m_{#tilde{t}} [GeV]", "m_{LSP} [GeV]");
+    exclusion.first->Write(model+"_"+scenarioX+input+"excludedPoints");
+    embellish(exclusion.second, "m_{#tilde{t}} [GeV]", "m_{LSP} [GeV]");
+    exclusion.second->SetTitle(model+"_"+scenarioX+input+"strength_UL");
+    exclusion.second->Write(model+"_"+scenarioX+input+"strength_UL");
+  }
+
 
   file->Close();
 }

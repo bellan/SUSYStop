@@ -49,8 +49,8 @@ def addExcludedGraph(model,scenarioX,polschema,variation):
     fBest = ROOT.TFile(model+"_"+scenarioX+"_"+polschema+"_sigma_UL_bestexpected.root","UPDATE")
 
     typeExlcusion = "_expected_"
-    if not variation == "": typeExlcusion = typeExlcusion + variation + "_"
-    if variation == "obs" : typeExlcusion = "_observed_"
+    if not variation  == ""    : typeExlcusion = typeExlcusion + variation + "_"
+    if variation[0:3] == "obs" : typeExlcusion = "_" + variation  + "_"
 
     hExcluded = fBest.Get(model+"_"+scenarioX+typeExlcusion+"excludedPoints")
     
@@ -85,7 +85,7 @@ from modelclass import *
 models = [Model("T2tt", [""]                  , [""]),
           Model("T2bw", ["0p25","0p50","0p75"], ["LL_LR","RL_RR"])]
 
-variations = ["","p1s","m1s","L","R","obs"]
+variations = ["","p1s","m1s","L","R","observed","observed_p1s","observed_m1s"]
 
 for model in models:
     for scenarioX in model.scenariosX:
