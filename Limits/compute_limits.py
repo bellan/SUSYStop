@@ -18,7 +18,8 @@ if os.path.exists(intResults):
 os.popen('mkdir "%s"' %intResults)
 
 failure = ""
-debug = ast.literal_eval(sys.argv[1]) if len(sys.argv) == 2 else False
+limitType = sys.argv[1] if len(sys.argv) >1 else "expected"
+debug = ast.literal_eval(sys.argv[2]) if len(sys.argv) == 3 else False
 
 ### ---------------------------------------------------------------------------------------------------------------- ###
 
@@ -71,7 +72,7 @@ for model in models:
     for scenarioX in model.scenariosX:
         for polschema in model.regions: # polarizations in this case!
             for doPol in doPolChoices: 
-                macro = "'makePlots.C+("+'"{0:s}","{1:s}","{2:s}",{3:b})'.format(model.model,scenarioX,polschema,doPol)+"'"
+                macro = "'makePlots.C+("+'"{0:s}","{1:s}","{2:s}",{3:b})'.format(model.model,scenarioX,polschema,doPol,limitType)+"'"
                 command = root+macro
                 print command
                 failure4, output4 = commands.getstatusoutput(command)

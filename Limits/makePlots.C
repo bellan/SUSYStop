@@ -155,15 +155,15 @@ TMultiGraph* drawOutline(TH2* histogram, double threshold, double cornerSize = 0
   return outline;
 }
 
-TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scenarioX, const TString& polschema, bool pol, const TString &type){
+TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scenarioX, const TString& polschema, bool pol, const TString &type, const TString &limitType){
 
-  TH2F* hExclusion     = (TH2F*)file->Get(model + "_" + scenarioX + "_expected_excludedPoints");
+  TH2F* hExclusion    = (TH2F*)file->Get(model + "_" + scenarioX + "_"+limitType+"_excludedPoints");
   TH2F* hExclusion_p1 = 0;
   TH2F* hExclusion_m1 = 0;
   
   if(!pol){
-    hExclusion_p1 = (TH2F*)file->Get(model + "_" + scenarioX + "_expected_p1s_excludedPoints");
-    hExclusion_m1 = (TH2F*)file->Get(model + "_" + scenarioX + "_expected_m1s_excludedPoints");
+    hExclusion_p1 = (TH2F*)file->Get(model + "_" + scenarioX + "_"+limitType+"_p1s_excludedPoints");
+    hExclusion_m1 = (TH2F*)file->Get(model + "_" + scenarioX + "_"+limitType+"_m1s_excludedPoints");
   }
   else{
     hExclusion_p1 = (TH2F*)file->Get(model + "_" + scenarioX + "_expected_R_excludedPoints");
@@ -179,7 +179,7 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
   TH2F* hlimit_exp = 0;
   
   if(type == "x"){ // x stays for xsection
-    hlimit_exp     = (TH2F*)file->Get(model + "_" + scenarioX + "_expected_xsection_UL");
+    hlimit_exp     = (TH2F*)file->Get(model + "_" + scenarioX + "_"+limitType+"_xsection_UL");
     cout << "Min,max: " << hlimit_exp->GetMinimum(0.00001) << "," << hlimit_exp->GetMaximum() << endl;
     hlimit_exp->SetMaximum(1e2);  
     hlimit_exp->SetMinimum(3e-3);  
@@ -188,7 +188,7 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
   }
   
   else if(type == "s"){ // s stays for strength
-    hlimit_exp     = (TH2F*)file->Get(model + "_" + scenarioX + "_expected_strength_UL");
+    hlimit_exp     = (TH2F*)file->Get(model + "_" + scenarioX + "_"+limitType+"_strength_UL");
     hlimit_exp->SetMaximum(2.5);
     embellish(hlimit_exp, "m_{#tilde{t}} [GeV]", "m_{LSP} [GeV]","95% CL limit on #sigma/#sigma_{SUSY}");
   }
@@ -252,7 +252,8 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
     setStyle(outline_p1, kViolet-3, 7);
 
     leg->AddEntry(outline_p1->GetListOfGraphs()->First()," ","l");
-    leg->AddEntry(outline->GetListOfGraphs()->First(),"Expected, #pm 1 #sigma_{experiment}","l");
+    if(limitType == "expected") leg->AddEntry(outline->GetListOfGraphs()->First(),"Expected, #pm 1 #sigma_{experiment}","l");
+    if(limitType == "observed") leg->AddEntry(outline->GetListOfGraphs()->First(),"Observed, #pm 1 #sigma_{theory}","l");
     leg->AddEntry(outline_m1->GetListOfGraphs()->First()," ","l");
   }
 
@@ -264,7 +265,7 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
 }
 
 
-void makePlots(TString model = "T2tt", TString scenarioX = "", TString polschema = "", bool pol = false){
+void makePlots(TString model = "T2tt", TString scenarioX = "", TString polschema = "", bool pol = false, const TString &limitType = "expected"){
   TStyle* myStyle = setTDRStyle();
   paletteColdToHot(myStyle,"TChiWX");
     
@@ -322,7 +323,7 @@ void makePlots(TString model = "T2tt", TString scenarioX = "", TString polschema
 
   
   // ------ Strength -----
-  TCanvas *c2 = getExclusionPlot(file, model, scenarioX, polschema, pol, "s");
+  TCanvas *c2 = getExclusionPlot(file, model, scenarioX, polschema, pol, "s", limitType);
   c2->cd();
 
   // ----------- Draw text ----------------
@@ -342,7 +343,7 @@ void makePlots(TString model = "T2tt", TString scenarioX = "", TString polschema
 
   // Cross section UL
 
-  TCanvas *c3 = getExclusionPlot(file, model, scenarioX, polschema, pol, "x");
+  TCanvas *c3 = getExclusionPlot(file, model, scenarioX, polschema, pol, "x", limitType);
   c3->cd();
 
   // ----------- Draw text ----------------
