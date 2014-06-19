@@ -265,14 +265,11 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
 }
 
 
-void makePlots(TString model = "T2tt", TString scenarioX = "", TString polschema = "", bool pol = false, const TString &limitType = "expected"){
+void makePlots(TString model = "T2tt", TString scenarioX = "", TString polschema = "", bool pol = false, TString limitType = "expected"){
   TStyle* myStyle = setTDRStyle();
   paletteColdToHot(myStyle,"TChiWX");
     
   TFile *file     = new TFile(model+"_"+scenarioX+"_"+polschema+"_sigma_UL_bestexpected.root");
-
-
-
 
   // ------------------ Best region used in the limit ------------------
   TCanvas* c1 = new TCanvas();

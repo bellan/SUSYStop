@@ -72,7 +72,7 @@ for model in models:
     for scenarioX in model.scenariosX:
         for polschema in model.regions: # polarizations in this case!
             for doPol in doPolChoices: 
-                macro = "'makePlots.C+("+'"{0:s}","{1:s}","{2:s}",{3:b})'.format(model.model,scenarioX,polschema,doPol,limitType)+"'"
+                macro = "'makePlots.C+("+'"{0:s}","{1:s}","{2:s}",{3:b},"{4:s}")'.format(model.model,scenarioX,polschema,doPol,limitType)+"'"
                 command = root+macro
                 print command
                 failure4, output4 = commands.getstatusoutput(command)
