@@ -182,7 +182,7 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
     hlimit_exp     = (TH2F*)file->Get(model + "_" + scenarioX + "_"+limitType+"_xsection_UL");
     cout << "Min,max: " << hlimit_exp->GetMinimum(0.00001) << "," << hlimit_exp->GetMaximum() << endl;
     hlimit_exp->SetMaximum(1e2);  
-    hlimit_exp->SetMinimum(3e-3);  
+    hlimit_exp->SetMinimum(2e-3);  
     c2->SetLogz(1);
     embellish(hlimit_exp, "m_{#tilde{t}} [GeV]", "m_{LSP} [GeV]","95% CL limit on #sigma");
   }
