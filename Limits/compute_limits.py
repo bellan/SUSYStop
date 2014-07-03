@@ -61,6 +61,7 @@ for model in models:
 ### ---------------------------------------------------------------------------------------------------------------- ###
 
 failure4, output4 = commands.getstatusoutput("./addExcludedGraphs.py")
+print "./addExcludedGraphs.py"
 if debug: print output4
 failure = failure + " " + str(failure4)
 
