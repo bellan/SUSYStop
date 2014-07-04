@@ -23,7 +23,7 @@ debug = ast.literal_eval(sys.argv[2]) if len(sys.argv) == 3 else False
 
 ### ---------------------------------------------------------------------------------------------------------------- ###
 
-failure1, output1 = commands.getstatusoutput("./compute_nevents_UL.py")
+failure1, output1 = commands.getstatusoutput("./compute_nevents_UL_fromROOTfiles.py")
 if debug: print output1
 failure = str(failure1)
 

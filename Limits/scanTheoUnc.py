@@ -21,8 +21,8 @@ def scan(file, blind, expected,seed=12345):
     outputbase = "results/"+model_region
 
     # Theo unc scenarios
-    #list = [1+x/100. for x in range(0,125,5)]
-    list = [1+x/100. for x in range(0,10,5)]
+    list = [1+x/100. for x in range(0,125,5)]
+    #list = [1+x/100. for x in range(0,5,5)]
     
     print "Scanning ", template, "using", list
 
@@ -36,7 +36,8 @@ def scan(file, blind, expected,seed=12345):
         
         output = outputbase+"_"+str(i)+".txt"
         blindOption = "--run blind" if blind else ""
-        run_limits = "combine {0:s} -M HybridNew --rule CLs --testStat=LHC -s {1:.0f} --generateNuis=0 --generateExt=1 --fitNuis=1 -i 10 --fork 8 -m {2:.2f} -n {3:s} {4:s} > {5:s}".format(input, seed, i, model_region, expected, output)
+        run_limits = "combine {0:s} -M HybridNew --frequentis -s {1:.0f} --fork 8 -m {2:.2f} -n {3:s} {4:s} > {5:s}".format(input, seed, i, model_region, expected, output)
+        #run_limits = "combine {0:s} -M HybridNew --rule CLs --testStat=LHC -s {1:.0f} --generateNuis=0 --generateExt=1 --fitNuis=1 -i 10 --fork 8 -m {2:.2f} -n {3:s} {4:s} > {5:s}".format(input, seed, i, model_region, expected, output)        
         #run_limits =  "combine -M HybridNew --frequentist --testStat LHC {0:s} --fork 8 > {1:s}".format(input, output)
         #run_limits =  "combine -M HybridNew {0:s}  --rule CLs --testStat=LHC --generateNuis=0 --fitNuis=0 --generateExt=1 {1:s} > {2:s}".format(blindOption, input, output)
         #run_limits = "combine -M Asymptotic --rMax 100 {0:s} {1:s} > {2:s}".format(blindOption, input, output)
@@ -69,5 +70,11 @@ if not os.path.exists(results):
 for file in files:
     scan(file, blind, expected)
 
+limitType = "Asymptotic"
+if len(sys.argv) < 3: limitType = "CLs_observed"
+if len(sys.argv) == 3:
+    limitType = "CLs_expected_"+expected[19:]
 
+os.popen('rm -r "%s"' %limitType)
+os.popen('mv results/ "%s"' %limitType)
 commands.getstatusoutput("rm higgsCombineTest.Asymptotic.mH120.root")
