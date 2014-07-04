@@ -182,7 +182,7 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
     hlimit_exp     = (TH2F*)file->Get(model + "_" + scenarioX + "_"+limitType+"_xsection_UL");
     cout << "Min,max: " << hlimit_exp->GetMinimum(0.00001) << "," << hlimit_exp->GetMaximum() << endl;
     hlimit_exp->SetMaximum(1e2);  
-    hlimit_exp->SetMinimum(3e-3);  
+    hlimit_exp->SetMinimum(2e-3);  
     c2->SetLogz(1);
     embellish(hlimit_exp, "m_{#tilde{t}} [GeV]", "m_{LSP} [GeV]","95% CL limit on #sigma");
   }
@@ -247,9 +247,13 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
   else{
     c2->SetName(hlimit_exp->GetTitle());
   
-    setStyle(outline   , kViolet-3, 1);
-    setStyle(outline_m1, kViolet-3, 7);
-    setStyle(outline_p1, kViolet-3, 7);
+    int col = 0;
+    if(limitType == "expected") col = kRed;
+    if(limitType == "observed") col = kBlack;
+
+    setStyle(outline   , col, 1);
+    setStyle(outline_m1, col, 7);
+    setStyle(outline_p1, col, 7);
 
     leg->AddEntry(outline_p1->GetListOfGraphs()->First()," ","l");
     if(limitType == "expected") leg->AddEntry(outline->GetListOfGraphs()->First(),"Expected, #pm 1 #sigma_{experiment}","l");
@@ -258,6 +262,49 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
   }
 
   hlimit_exp->SetTitle("");
+
+
+
+
+
+  // ----------------------------------------------------------------------------------------------------------------------
+  // Add expected limits on top of observed
+
+  if(limitType == "observed"){
+    TH2F* hExpExclusion    = (TH2F*)file->Get(model + "_" + scenarioX + "_expected_excludedPoints");
+    TH2F* hExpExclusion_p1 = (TH2F*)file->Get(model + "_" + scenarioX + "_expected_p1s_excludedPoints");
+    TH2F* hExpExclusion_m1 = (TH2F*)file->Get(model + "_" + scenarioX + "_expected_m1s_excludedPoints");
+  
+    assert(hExpExclusion    !=0);
+    assert(hExpExclusion_p1 !=0);
+    assert(hExpExclusion_m1 !=0);
+
+    TMultiGraph* exp_outline     = drawOutline(hExpExclusion   , 0.999, 0.1);
+    TMultiGraph* exp_outline_p1  = drawOutline(hExpExclusion_p1, 0.999, 0.1);
+    TMultiGraph* exp_outline_m1  = drawOutline(hExpExclusion_m1, 0.999, 0.1);   
+    assert(exp_outline    !=0);
+    assert(exp_outline_p1 !=0);
+    assert(exp_outline_m1 !=0);
+ 
+    exp_outline    ->Draw("l");
+    exp_outline_p1 ->Draw("l");
+    exp_outline_m1 ->Draw("l");
+
+    setStyle(exp_outline   , kRed, 1);
+    setStyle(exp_outline_m1, kRed, 7);
+    setStyle(exp_outline_p1, kRed, 7);
+
+  
+    leg->AddEntry(exp_outline_p1->GetListOfGraphs()->First()," ","l");
+    leg->AddEntry(exp_outline->GetListOfGraphs()->First(),"Expected, #pm 1 #sigma_{experiment}","l");
+    leg->AddEntry(exp_outline_m1->GetListOfGraphs()->First()," ","l");
+  }  
+  
+  // ----------------------------------------------------------------------------------------------------------------------
+
+
+
+
   leg->Draw("same");
   
   // ---------------------------------------
@@ -337,6 +384,7 @@ void makePlots(TString model = "T2tt", TString scenarioX = "", TString polschema
   }
 
   c2->SaveAs(".pdf");
+  c2->SaveAs(".root");
 
   // Cross section UL
 
@@ -357,6 +405,7 @@ void makePlots(TString model = "T2tt", TString scenarioX = "", TString polschema
   }
 
   c3->SaveAs(".pdf");
+  c3->SaveAs(".root");
   // --------------------------------------
 
 
