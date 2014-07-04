@@ -1,0 +1,9 @@
+	CLs = 0 +/- 0
+	CLs      = 0 +/- 0
+	CLb      = 0.00833333 +/- 0.00829854
+	CLsplusb = 0 +/- 0
+
+
+ -- Hybrid New -- 
+Limit: r < 7.86104 +/- 0.107116 @ 95% CL
+Done in 0.02 min (cpu), 0.99 min (real)

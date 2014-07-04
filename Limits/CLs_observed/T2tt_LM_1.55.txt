@@ -1,0 +1,13 @@
+	CLs = 0.0109971 +/- 0.0111884
+	CLs      = 0.0109971 +/- 0.0111884
+	CLb      = 0.183333 +/- 0.0353226
+	CLsplusb = 0.00201613 +/- 0.0020141
+
+
+ -- HybridNew, before fit -- 
+Limit: r < 10 +/- 10 [8.75, 10.3125]
+Fit to 4 points: 9.34228 +/- 0.138952
+
+ -- Hybrid New -- 
+Limit: r < 9.34228 +/- 0.138952 @ 95% CL
+Done in 0.03 min (cpu), 1.52 min (real)
