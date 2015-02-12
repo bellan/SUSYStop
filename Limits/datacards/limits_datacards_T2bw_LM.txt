@@ -7,7 +7,7 @@
 
 imax 1 number of channels
 jmax 4 number of backgrounds
-kmax 6 number of nuisance parameters (sources of systematical uncertainties)
+kmax 5 number of nuisance parameters (sources of systematical uncertainties)
 ---------------------
 
 ##### Observations ####
@@ -21,14 +21,13 @@ observation 47
 bin                   	 1       1	1	1	1
 process        	      Sign     ttbarWo	Znunu	ttZ	QCD
 process		      	 0       1	2	3	4
-rate           	      	 1	25.2	4.57	2.46	0.36 
+rate           	      	 1	30.35	4.57	2.46	0.36 
 
 ---------------------
 
 total_Signal	lnN   1.XX	-	-	-	-
-lumi		lnN   1.026	-	-	-	-
-ttbarWo		lnN	-	1.23	-	-	-
-Znunu		lnN	-	-	1.42	-	-
-ttZ		lnN	-	-	-	1.49	-
+ttbarWo		lnN	-	1.13	-	-	-
+Znunu		lnN	-	-	1.37	-	-
+ttZ		lnN	-	-	-	1.45	-
 QCD		lnN	-	-	-	-	1.53
 
