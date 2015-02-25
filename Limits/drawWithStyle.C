@@ -151,15 +151,22 @@ void embellish(TH2F* histo, const TString& titleXaxis, const TString& titleYaxis
   histo->SetStats(kFALSE);
 }
 
-void setStyle(TMultiGraph* outline, int color, int style){
+void setStyle(TMultiGraph* outline, int color, int style, int width = 5){
   TList *l = outline->GetListOfGraphs();
   TIter next(l);
   while (TObject *obj = next()){
-    ((TGraph*)obj)->SetLineWidth(5);
+    ((TGraph*)obj)->SetLineWidth(width);
     ((TGraph*)obj)->SetLineColor(color);
     ((TGraph*)obj)->SetLineStyle(style);
   }
 }
+
+void setStyle(TGraph2D* obj, int color, int style, int width = 5){
+  obj->SetLineWidth(width);
+  obj->SetLineColor(color);
+  obj->SetLineStyle(style);
+}
+
 
 
 void drawCMSInscription(){

@@ -248,12 +248,13 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
     c2->SetName(hlimit_exp->GetTitle());
   
     int col = 0;
-    if(limitType == "expected") col = kRed;
+    int sty = 1;
+    if(limitType == "expected") {col = kRed; sty = 7;}
     if(limitType == "observed") col = kBlack;
 
-    setStyle(outline   , col, 1);
-    setStyle(outline_m1, col, 7);
-    setStyle(outline_p1, col, 7);
+    setStyle(outline   , col, sty, 4);
+    setStyle(outline_m1, col, sty, 2);
+    setStyle(outline_p1, col, sty, 2);
 
     leg->AddEntry(outline_p1->GetListOfGraphs()->First()," ","l");
     if(limitType == "expected") leg->AddEntry(outline->GetListOfGraphs()->First(),"Expected, #pm 1 #sigma_{experiment}","l");
@@ -290,9 +291,9 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
     exp_outline_p1 ->Draw("l");
     exp_outline_m1 ->Draw("l");
 
-    setStyle(exp_outline   , kRed, 1);
-    setStyle(exp_outline_m1, kRed, 7);
-    setStyle(exp_outline_p1, kRed, 7);
+    setStyle(exp_outline   , kRed, 7, 4);
+    setStyle(exp_outline_m1, kRed, 7, 2);
+    setStyle(exp_outline_p1, kRed, 7, 2);
 
   
     leg->AddEntry(exp_outline_p1->GetListOfGraphs()->First()," ","l");
@@ -335,8 +336,8 @@ void makePlots(TString model = "T2tt", TString scenarioX = "", TString polschema
   
   l.SetNDC();
   
-  l.DrawLatex(0.20,0.972,"CMS Preliminary");
-  l.DrawLatex(0.17,0.935,"#sqrt{s} = 8 TeV   L = 19.03 fb^{-1}");
+  l.DrawLatex(0.20,0.972,"CMS");
+  l.DrawLatex(0.17,0.935,"#sqrt{s} = 8 TeV   L = 18.9 fb^{-1}");
   
   TString s_top;
   char *s_LSP = new char[100];
@@ -372,8 +373,8 @@ void makePlots(TString model = "T2tt", TString scenarioX = "", TString polschema
 
   // ----------- Draw text ----------------
   
-  l.DrawLatex(0.20,0.972,"CMS Preliminary");
-  l.DrawLatex(0.17,0.935,"#sqrt{s} = 8 TeV   L = 19.03 fb^{-1}");
+  l.DrawLatex(0.20,0.972,"CMS");
+  l.DrawLatex(0.17,0.935,"#sqrt{s} = 8 TeV   L = 18.9 fb^{-1}");
   
   if(model == "T2tt")
       l.DrawLatex(0.57,0.965,s_top);
@@ -393,8 +394,8 @@ void makePlots(TString model = "T2tt", TString scenarioX = "", TString polschema
 
   // ----------- Draw text ----------------
   
-  l.DrawLatex(0.20,0.972,"CMS Preliminary");
-  l.DrawLatex(0.17,0.935,"#sqrt{s} = 8 TeV   L = 19.03 fb^{-1}");
+  l.DrawLatex(0.20,0.972,"CMS");
+  l.DrawLatex(0.17,0.935,"#sqrt{s} = 8 TeV   L = 18.9 fb^{-1}");
   
   if(model == "T2tt")
       l.DrawLatex(0.57,0.965,s_top);
