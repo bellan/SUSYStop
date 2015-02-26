@@ -3,8 +3,8 @@
 #ifndef TDRSTYLE_h
 #define TDRSTYLE_h
 
-inline TStyle *setTDRStyle() {
-  TStyle *tdrStyle = new TStyle("tdrStyle","Style for P-TDR");
+inline TStyle *setTDRStyle(const TString& post = "") {
+  TStyle *tdrStyle = new TStyle("tdrStyle"+post,"Style for P-TDR");
   
   // For the canvas:
   tdrStyle->SetCanvasBorderMode(0);

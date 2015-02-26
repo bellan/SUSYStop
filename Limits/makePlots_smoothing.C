@@ -327,10 +327,12 @@ TList *getOutline(TH2F *histo){
 
 
 
-TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scenarioX, const TString& polschema, bool pol, const TString &type, const TString &limitType){
+TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scenarioX, const TString& polschema, bool pol, const TString &type, const TString &limitType){  
 
   TCanvas* c2 = new TCanvas();
   TH2F* hlimit_exp     = 0;
+  TH2F * h_fake = 0; // just for binning
+
   //TH2F *hlimit_exp_    = 0;
   if(type == "x"){ // x stays for xsection
 
@@ -338,13 +340,17 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
     TH2F *hlimit_exp_     = (TH2F*)file->Get(model + "_" + scenarioX + "_"+limitType+"_xsection_UL");
     cout << "Min,max: " << hlimit_exp_->GetMinimum(0.00001) << "," << hlimit_exp_->GetMaximum() << endl;
     hlimit_exp = (TH2F*)hlimit_exp_->Clone();
-    hlimit_exp = interpolate(hlimit_exp_,"SW"); hlimit_exp = interpolate(hlimit_exp,"SW"); hlimit_exp = rebin(hlimit_exp,"SW"); //hlimit_exp = rebin(hlimit_exp,"SW"); 
+    //hlimit_exp = interpolate(hlimit_exp_,"SW"); hlimit_exp = interpolate(hlimit_exp,"SW"); hlimit_exp = rebin(hlimit_exp,"SW"); //hlimit_exp = rebin(hlimit_exp,"SW"); 
     hlimit_exp->SetMaximum(1e2);  
     hlimit_exp->SetMinimum(2e-3);  
     c2->SetLogz(1);
     embellish(hlimit_exp, "m_{#tilde{t}} [GeV]", "m_{LSP} [GeV]","95% CL limit on #sigma");
     // -------------------------------------------------------------------------------------
-
+    h_fake = new TH2F("h_fake", "h_fake", 
+			    hlimit_exp->GetXaxis()->GetNbins()*2, hlimit_exp->GetXaxis()->GetXmin(), hlimit_exp->GetXaxis()->GetXmax(), 
+			    hlimit_exp->GetYaxis()->GetNbins()*2, hlimit_exp->GetYaxis()->GetXmin(), hlimit_exp->GetYaxis()->GetXmax()
+			    );
+    embellish(h_fake, "m_{#tilde{t}} [GeV]", "m_{LSP} [GeV]","95% CL limit on #sigma");
   }
   
   else if(type == "s"){ // s stays for strength
@@ -353,27 +359,47 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
     TH2F *hlimit_exp_     = (TH2F*)file->Get(model + "_" + scenarioX + "_"+limitType+"_strength_UL");
     cout << "Min,max: " << hlimit_exp_->GetMinimum() << "," << hlimit_exp_->GetMaximum() << endl;
     hlimit_exp = (TH2F*)hlimit_exp_->Clone();
-    hlimit_exp = interpolate(hlimit_exp_,"SW"); hlimit_exp = interpolate(hlimit_exp,"SW"); hlimit_exp = rebin(hlimit_exp,"SW"); //hlimit_exp = rebin(hlimit_exp,"SW"); 
+    //hlimit_exp = interpolate(hlimit_exp_,"SW"); hlimit_exp = interpolate(hlimit_exp,"SW"); hlimit_exp = rebin(hlimit_exp,"SW"); //hlimit_exp = rebin(hlimit_exp,"SW"); 
     hlimit_exp->SetMaximum(2.5);
     embellish(hlimit_exp, "m_{#tilde{t}} [GeV]", "m_{LSP} [GeV]","95% CL limit on #sigma/#sigma_{SUSY}");
     // -------------------------------------------------------------------------------------
-
+    h_fake = new TH2F("h_fake", "h_fake", 
+		      hlimit_exp->GetXaxis()->GetNbins()*2, hlimit_exp->GetXaxis()->GetXmin(), hlimit_exp->GetXaxis()->GetXmax(), 
+		      hlimit_exp->GetYaxis()->GetNbins()*2, hlimit_exp->GetYaxis()->GetXmin(), hlimit_exp->GetYaxis()->GetXmax()
+		      );
+    embellish(h_fake, "m_{#tilde{t}} [GeV]", "m_{LSP} [GeV]","95% CL limit on #sigma/#sigma_{SUSY}"); 
   }
   else{
     cout << type << ": unknown type. *** Abort ***"<<endl;
     return new TCanvas();
   }
  
-  hlimit_exp->Draw("colz0");
+  h_fake->GetYaxis()->SetRangeUser(0,400);
+  h_fake->GetXaxis()->SetRangeUser(200, model == "T2tt" ? 900 : 800);
+  h_fake->GetXaxis()->SetLabelSize(hlimit_exp->GetXaxis()->GetLabelSize());
+  h_fake->GetYaxis()->SetLabelSize(hlimit_exp->GetYaxis()->GetLabelSize());
+  h_fake->GetXaxis()->SetLabelOffset(hlimit_exp->GetXaxis()->GetLabelOffset());
+  h_fake->GetYaxis()->SetLabelOffset(hlimit_exp->GetYaxis()->GetLabelOffset());
+  h_fake->GetXaxis()->SetTitleSize(hlimit_exp->GetXaxis()->GetTitleSize());
+  h_fake->GetYaxis()->SetTitleSize(hlimit_exp->GetYaxis()->GetTitleSize());
+  h_fake->GetXaxis()->SetTitleOffset(hlimit_exp->GetXaxis()->GetTitleOffset());
+  h_fake->GetYaxis()->SetTitleOffset(hlimit_exp->GetYaxis()->GetTitleOffset());
+  
+  h_fake->Draw();
+
+  hlimit_exp->Draw("same colz0");
+  //hlimit_exp->Draw("colz0");
+
+  h_fake->Draw("same axis");
 
   // Now get the normalized (to susy reference cross section) plots
   TH2F* hExclusion_    = (TH2F*)file->Get(model + "_" + scenarioX + "_"+limitType+"_strength_UL");
   TH2F* hExclusion_p1_ = (TH2F*)file->Get(model + "_" + scenarioX + "_"+limitType+"_p1s_strength_UL");
   TH2F* hExclusion_m1_ = (TH2F*)file->Get(model + "_" + scenarioX + "_"+limitType+"_m1s_strength_UL");
 
-  TH2F* hExclusion    = interpolate(hExclusion_   ,"SW"); hExclusion    = interpolate(hExclusion   ,"SW"); hExclusion    = rebin(hExclusion   ,"SW"); //hExclusion    = rebin(hExclusion   ,"SW"); 
-  TH2F* hExclusion_p1 = interpolate(hExclusion_p1_,"SW"); hExclusion_p1 = interpolate(hExclusion_p1,"SW"); hExclusion_p1 = rebin(hExclusion_p1,"SW"); //hExclusion_p1 = rebin(hExclusion_p1,"SW");
-  TH2F* hExclusion_m1 = interpolate(hExclusion_m1_,"SW"); hExclusion_m1 = interpolate(hExclusion_m1,"SW"); hExclusion_m1 = rebin(hExclusion_m1,"SW"); //hExclusion_m1 = rebin(hExclusion_m1,"SW");
+  TH2F* hExclusion    = interpolate(hExclusion_   ,"SW"); hExclusion    = interpolate(hExclusion   ,"SW"); hExclusion    = rebin(hExclusion   ,"SW"); hExclusion    = rebin(hExclusion   ,"SW"); 
+  TH2F* hExclusion_p1 = interpolate(hExclusion_p1_,"SW"); hExclusion_p1 = interpolate(hExclusion_p1,"SW"); hExclusion_p1 = rebin(hExclusion_p1,"SW"); hExclusion_p1 = rebin(hExclusion_p1,"SW");
+  TH2F* hExclusion_m1 = interpolate(hExclusion_m1_,"SW"); hExclusion_m1 = interpolate(hExclusion_m1,"SW"); hExclusion_m1 = rebin(hExclusion_m1,"SW"); hExclusion_m1 = rebin(hExclusion_m1,"SW");
 
   TList *outline    = getOutline(hExclusion);
   TList *outline_p1 = getOutline(hExclusion_p1);
@@ -486,7 +512,7 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
 void makePlots_smoothing(TString model = "T2tt", TString scenarioX = "", TString polschema = "", bool pol = false, TString limitType = "expected"){
   TStyle* myStyle = setTDRStyle();
   paletteColdToHot(myStyle,"TChiWX");
-    
+ 
   TFile *file     = new TFile(model+"_"+scenarioX+"_"+polschema+"_sigma_UL_bestexpected.root");
 
   // ------------------ Best region used in the limit ------------------
@@ -495,8 +521,9 @@ void makePlots_smoothing(TString model = "T2tt", TString scenarioX = "", TString
   TH2F* hbestRegion     = (TH2F*)file->Get(model + "_" + scenarioX +  "_bestRegion");
   embellish(hbestRegion, "m_{#tilde{t}} [GeV]", "m_{LSP} [GeV]", "Region");
   hbestRegion->SetTitle("");
+
   hbestRegion->Draw("col text");
- 
+
   // ----------- Draw text ----------------
   
   TLatex l;

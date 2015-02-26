@@ -83,9 +83,10 @@ def addExcludedGraph(model,scenarioX,polschema,variation):
 
 from modelclass import *
 models = [Model("T2tt", [""]                  , [""]),
-          Model("T2bw", ["0p25","0p50","0p75"], ["LL_LR","RL_RR"])]
+          Model("T2bw", ["0p25","0p50","0p75"], ["LL_LR"])]#,"RL_RR"])]
 
-variations = ["","p1s","m1s","L","R","observed","observed_p1s","observed_m1s"]
+variations = ["","p1s","m1s","observed","observed_p1s","observed_m1s"]
+#variations = ["","p1s","m1s","L","R","observed","observed_p1s","observed_m1s"]
 
 for model in models:
     for scenarioX in model.scenariosX:

@@ -31,7 +31,7 @@ failure = str(failure1)
 
 from modelclass import *
 models = [Model("T2tt", [""]                  , [""]),
-          Model("T2bw", ["0p25","0p50","0p75"], ["LL_LR","RL_RR"])]         
+          Model("T2bw", ["0p25","0p50","0p75"], ["LL_LR"])]#,"RL_RR"])]         
 
 for model in models:
     for polschema in model.regions:
@@ -67,7 +67,8 @@ failure = failure + " " + str(failure4)
 
 ### ---------------------------------------------------------------------------------------------------------------- ###
 
-doPolChoices = [True,False]
+#doPolChoices = [True,False]
+doPolChoices = [False]
 
 for model in models:
     for scenarioX in model.scenariosX:

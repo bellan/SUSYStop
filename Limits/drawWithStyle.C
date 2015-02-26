@@ -147,7 +147,7 @@ void embellish(TH2F* histo, const TString& titleXaxis, const TString& titleYaxis
   histo->GetXaxis()->SetTitleOffset(1.1);
   histo->GetYaxis()->SetTitleOffset(1.5);
   histo->GetZaxis()->SetTitleOffset(1.5);
-
+  
   histo->SetStats(kFALSE);
 }
 
