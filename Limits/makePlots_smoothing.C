@@ -20,6 +20,10 @@
 #include <TROOT.h>
 #include <TObjArray.h>
 #include <TMultiGraph.h>
+#include "./TGraphSmooth.h"
+
+#include <ctime>
+#include <iostream>
 
 #include "drawWithStyle.C"
 
@@ -158,173 +162,87 @@ TMultiGraph* drawOutline(TH2* histogram, double threshold, double cornerSize = 0
   return outline;
 }
 
-TCanvas *pippo(TFile* file, const TString &model, const TString &scenarioX, const TString& polschema, bool pol, const TString &type, const TString &limitType){
-
-  TH2F* hExclusion    = (TH2F*)file->Get(model + "_" + scenarioX + "_"+limitType+"_excludedPoints");
-  TH2F* hExclusion_p1 = 0;
-  TH2F* hExclusion_m1 = 0;
-  
-  if(!pol){
-    hExclusion_p1 = (TH2F*)file->Get(model + "_" + scenarioX + "_"+limitType+"_p1s_excludedPoints");
-    hExclusion_m1 = (TH2F*)file->Get(model + "_" + scenarioX + "_"+limitType+"_m1s_excludedPoints");
-  }
-  else{
-    hExclusion_p1 = (TH2F*)file->Get(model + "_" + scenarioX + "_expected_R_excludedPoints");
-    hExclusion_m1 = (TH2F*)file->Get(model + "_" + scenarioX + "_expected_L_excludedPoints");
-  }
-  
-  assert(hExclusion    !=0);
-  assert(hExclusion_p1 !=0);
-  assert(hExclusion_m1 !=0);
-
-  TCanvas* c2 = new TCanvas();
-  TH2F* hlimit_exp = 0;
-  
-  if(type == "x"){ // x stays for xsection
-    hlimit_exp     = (TH2F*)file->Get(model + "_" + scenarioX + "_"+limitType+"_xsection_UL");
-    cout << "Min,max: " << hlimit_exp->GetMinimum(0.00001) << "," << hlimit_exp->GetMaximum() << endl;
-    hlimit_exp->SetMaximum(1e2);  
-    hlimit_exp->SetMinimum(2e-3);  
-    c2->SetLogz(1);
-    embellish(hlimit_exp, "m_{#tilde{t}} [GeV]", "m_{LSP} [GeV]","95% CL limit on #sigma");
-  }
-  
-  else if(type == "s"){ // s stays for strength
-    hlimit_exp     = (TH2F*)file->Get(model + "_" + scenarioX + "_"+limitType+"_strength_UL");
-    hlimit_exp->SetMaximum(2.5);
-    embellish(hlimit_exp, "m_{#tilde{t}} [GeV]", "m_{LSP} [GeV]","95% CL limit on #sigma/#sigma_{SUSY}");
-  }
-  else{
-    cout << type << ": unknown type. *** Abort ***"<<endl;
-    return new TCanvas();
-  }
-  
-  TH2F *hlimit_exp_ = (TH2F*)hlimit_exp->Clone();
-
-  hlimit_exp_->Draw("colz0text");
-
-  TMultiGraph* outline     = drawOutline(hExclusion   , 0.999, 0.1);
-  TMultiGraph* outline_p1  = drawOutline(hExclusion_p1, 0.999, 0.1);
-  TMultiGraph* outline_m1  = drawOutline(hExclusion_m1, 0.999, 0.1);   
-  assert(outline    !=0);
-  assert(outline_p1 !=0);
-  assert(outline_m1 !=0);
- 
-  outline    ->Draw("l");
-  outline_p1 ->Draw("l");
-  outline_m1 ->Draw("l");
-  
-  // ----------- Draw legend ----------------
-  
-  TLegend *leg = new TLegend(0.18,0.77,0.36,0.90);
-  leg->SetTextSize(0.025);
-  leg->SetFillColor(kWhite);
-  leg->SetLineColor(kWhite);
-  leg->SetShadowColor(kWhite);
-
-  if(pol){
-    TString name = polschema;
-    if(polschema == "") name = "pol";
-    c2->SetName(TString(hlimit_exp->GetTitle())+"_"+name);
-
-    setStyle(outline   , kViolet-3, 1);
-    setStyle(outline_m1, kRed,      8);
-    setStyle(outline_p1, kSpring,   7);
-   
-    leg->AddEntry(outline->GetListOfGraphs()->First(),"Unpolarized","l");
-
-    if(polschema == ""){
-      leg->AddEntry(outline_p1->GetListOfGraphs()->First(),"Right","l");
-      leg->AddEntry(outline_m1->GetListOfGraphs()->First(),"Left","l");
-    }
-    else{
-      TObjArray*  tarray= polschema.Tokenize("_");
-      TString down(tarray->At(0)->GetName());
-      TString up(tarray->At(1)->GetName());
-      if(down == "LL") leg->AddEntry(outline_m1->GetListOfGraphs()->First(),"#tilde{#chi}^{#pm}_{left} W_{left}","l");
-      if(down == "RL") leg->AddEntry(outline_m1->GetListOfGraphs()->First(),"#tilde{#chi}^{#pm}_{right} W_{left}","l");
-      if(up   == "LR") leg->AddEntry(outline_p1->GetListOfGraphs()->First(),"#tilde{#chi}^{#pm}_{left} W_{right}","l");
-      if(up   == "RR") leg->AddEntry(outline_p1->GetListOfGraphs()->First(),"#tilde{#chi}^{#pm}_{right} W_{right}","l");
-    }
-
-  }
-  else{
-    c2->SetName(hlimit_exp->GetTitle());
-  
-    int col = 0;
-    int sty = 1;
-    if(limitType == "expected")  {col = kRed; sty = 7;}
-    if(limitType == "observed") col = kBlack;
-
-    setStyle(outline   , col, sty, 4);
-    setStyle(outline_m1, col, sty, 2);
-    setStyle(outline_p1, col, sty, 2);
-
-    leg->AddEntry(outline_p1->GetListOfGraphs()->First()," ","l");
-    if(limitType == "expected") leg->AddEntry(outline->GetListOfGraphs()->First(),"Expected, #pm 1 #sigma_{experiment}","l");
-    if(limitType == "observed") leg->AddEntry(outline->GetListOfGraphs()->First(),"Observed, #pm 1 #sigma_{theory}","l");
-    leg->AddEntry(outline_m1->GetListOfGraphs()->First()," ","l");
-  }
-
-  hlimit_exp->SetTitle("");
-
-
-
-
-
-  // ----------------------------------------------------------------------------------------------------------------------
-  // Add expected limits on top of observed
-
-  if(limitType == "observed"){
-    TH2F* hExpExclusion    = (TH2F*)file->Get(model + "_" + scenarioX + "_expected_excludedPoints");
-    TH2F* hExpExclusion_p1 = (TH2F*)file->Get(model + "_" + scenarioX + "_expected_p1s_excludedPoints");
-    TH2F* hExpExclusion_m1 = (TH2F*)file->Get(model + "_" + scenarioX + "_expected_m1s_excludedPoints");
-  
-    assert(hExpExclusion    !=0);
-    assert(hExpExclusion_p1 !=0);
-    assert(hExpExclusion_m1 !=0);
-
-    TMultiGraph* exp_outline     = drawOutline(hExpExclusion   , 0.999, 0.1);
-    TMultiGraph* exp_outline_p1  = drawOutline(hExpExclusion_p1, 0.999, 0.1);
-    TMultiGraph* exp_outline_m1  = drawOutline(hExpExclusion_m1, 0.999, 0.1);   
-    assert(exp_outline    !=0);
-    assert(exp_outline_p1 !=0);
-    assert(exp_outline_m1 !=0);
- 
-    exp_outline    ->Draw("l");
-    exp_outline_p1 ->Draw("l");
-    exp_outline_m1 ->Draw("l");
-
-    setStyle(exp_outline   , kRed, 7, 4);
-    setStyle(exp_outline_m1, kRed, 7, 2);
-    setStyle(exp_outline_p1, kRed, 7, 2);
-
-  
-    leg->AddEntry(exp_outline_p1->GetListOfGraphs()->First()," ","l");
-    leg->AddEntry(exp_outline->GetListOfGraphs()->First(),"Expected, #pm 1 #sigma_{experiment}","l");
-    leg->AddEntry(exp_outline_m1->GetListOfGraphs()->First()," ","l");
-  }  
-  
-  // ----------------------------------------------------------------------------------------------------------------------
-
-
-
-
-  leg->Draw("same");
-  
-  // ---------------------------------------
-  return c2;
-}
-
 TList *getOutline(TH2F *histo){
+
   TGraph2D *tg2d = new TGraph2D(histo); //Crea TGraph2D da TH2
+
   Double_t contours[1]; // Crea array con i valori dei contour che vuoi
-  contours[0] = 1.0;
+
   tg2d->GetHistogram()->SetContour(1,contours);  //SetContour(numero contour,array contour)
+
   TList *contLevel = tg2d->GetContourList(1.); // Prendi quello che ti interessa
+
   return contLevel; 
 }
 
+
+TList *drawContours(TFile *file, const TString &histoName, int col, int sty, int size){
+  TH2F* hExclusion_    = (TH2F*)file->Get(histoName);
+  //TH2F* hExclusion    = rebin(hExclusion_   ,"SW"); hExclusion    = rebin(hExclusion   ,"SW");
+  TH2F* hExclusion    = (TH2F*)hExclusion_->Clone();
+  TList *outline    = getOutline(hExclusion);
+  assert(outline    !=0);
+
+  TGraphSmooth *gs = new TGraphSmooth("normal");
+  TIter next(outline);
+  TObject *contour = 0;
+  int ncontours = 0;
+  while ((contour = next())){ // loop over the possible disjoint regions
+    ++ncontours;
+    setStyle((TGraph*)(contour)   , col, sty, size);
+
+    TGraph *fGin = (TGraph*)contour;
+    int fNin = fGin->GetN();
+    Double_t *xinA = new Double_t[fNin];
+    Double_t *yinA = new Double_t[fNin];
+    Double_t *xinB = new Double_t[fNin];
+    Double_t *yinB = new Double_t[fNin];
+
+    int typeA = 0;
+    int typeB = 0;
+    for (int i=0;i<fNin;i++) {
+      if (i != 0)
+	if(fGin->GetX()[i-1] < fGin->GetX()[i]){
+	  xinA[i] = fGin->GetX()[i];
+	  yinA[i] = fGin->GetY()[i];
+	  ++typeA;
+	}
+	else{
+	  ++typeB;
+	  xinB[i] = fGin->GetX()[i];
+	  yinB[i] = fGin->GetY()[i];
+	}
+      else{
+	++typeA;
+	xinA[i] = fGin->GetX()[i];
+	yinA[i] = fGin->GetY()[i];
+      }
+    }
+    TGraph *graphA = new TGraph(typeA,xinA,yinA);
+    TGraph *graphB = 0;
+    if (typeB != 0) 
+      graphB = new TGraph(typeB,xinB,yinB);
+
+
+
+    //contour = gs->SmoothKern((TGraph*)contour,"normal",5.0);
+    TGraph* smoothed = (TGraph*)gs->SmoothLowess((TGraph*)contour,"",0.2);
+    //TGraph* smoothed = (TGraph*)gs->SmoothSuper((TGraph*)contour,"",3);
+    //TGraph* smoothed = (TGraph*)contour;  
+
+    setStyle(smoothed   , col, sty, size);
+    smoothed->DrawClone("LX"); 
+    
+    for(unsigned i=0; i < ((TGraph*)contour)->GetN(); ++i){
+      double x,y;
+      ((TGraph*)contour)->GetPoint(i,x,y);
+      cout << i << " x: " << x << " y: " << y << endl;
+    }
+
+  }
+  cout << "N contours for " << histoName << " is " << ncontours << endl;
+  return outline;
+}
 
 
 TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scenarioX, const TString& polschema, bool pol, const TString &type, const TString &limitType){  
@@ -340,7 +258,7 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
     TH2F *hlimit_exp_     = (TH2F*)file->Get(model + "_" + scenarioX + "_"+limitType+"_xsection_UL");
     cout << "Min,max: " << hlimit_exp_->GetMinimum(0.00001) << "," << hlimit_exp_->GetMaximum() << endl;
     hlimit_exp = (TH2F*)hlimit_exp_->Clone();
-    //hlimit_exp = interpolate(hlimit_exp_,"SW"); hlimit_exp = interpolate(hlimit_exp,"SW"); hlimit_exp = rebin(hlimit_exp,"SW"); //hlimit_exp = rebin(hlimit_exp,"SW"); 
+    //hlimit_exp = rebin(hlimit_exp,"SW"); hlimit_exp = rebin(hlimit_exp,"SW"); hlimit_exp = rebin(hlimit_exp,"SW"); hlimit_exp = rebin(hlimit_exp,"SW"); hlimit_exp = rebin(hlimit_exp,"SW"); 
     hlimit_exp->SetMaximum(1e2);  
     hlimit_exp->SetMinimum(2e-3);  
     c2->SetLogz(1);
@@ -374,16 +292,11 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
     return new TCanvas();
   }
  
-  h_fake->GetYaxis()->SetRangeUser(0,400);
-  h_fake->GetXaxis()->SetRangeUser(200, model == "T2tt" ? 900 : 800);
-  h_fake->GetXaxis()->SetLabelSize(hlimit_exp->GetXaxis()->GetLabelSize());
-  h_fake->GetYaxis()->SetLabelSize(hlimit_exp->GetYaxis()->GetLabelSize());
-  h_fake->GetXaxis()->SetLabelOffset(hlimit_exp->GetXaxis()->GetLabelOffset());
-  h_fake->GetYaxis()->SetLabelOffset(hlimit_exp->GetYaxis()->GetLabelOffset());
-  h_fake->GetXaxis()->SetTitleSize(hlimit_exp->GetXaxis()->GetTitleSize());
-  h_fake->GetYaxis()->SetTitleSize(hlimit_exp->GetYaxis()->GetTitleSize());
-  h_fake->GetXaxis()->SetTitleOffset(hlimit_exp->GetXaxis()->GetTitleOffset());
-  h_fake->GetYaxis()->SetTitleOffset(hlimit_exp->GetYaxis()->GetTitleOffset());
+  h_fake->GetYaxis()->SetRangeUser(0,400);                                      h_fake->GetXaxis()->SetRangeUser(200, model == "T2tt" ? 900 : 800);
+  h_fake->GetXaxis()->SetLabelSize(hlimit_exp->GetXaxis()->GetLabelSize());     h_fake->GetYaxis()->SetLabelSize(hlimit_exp->GetYaxis()->GetLabelSize());
+  h_fake->GetXaxis()->SetLabelOffset(hlimit_exp->GetXaxis()->GetLabelOffset()); h_fake->GetYaxis()->SetLabelOffset(hlimit_exp->GetYaxis()->GetLabelOffset());
+  h_fake->GetXaxis()->SetTitleSize(hlimit_exp->GetXaxis()->GetTitleSize());     h_fake->GetYaxis()->SetTitleSize(hlimit_exp->GetYaxis()->GetTitleSize());
+  h_fake->GetXaxis()->SetTitleOffset(hlimit_exp->GetXaxis()->GetTitleOffset()); h_fake->GetYaxis()->SetTitleOffset(hlimit_exp->GetYaxis()->GetTitleOffset());
   
   h_fake->Draw();
 
@@ -391,53 +304,15 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
   //hlimit_exp->Draw("colz0");
 
   h_fake->Draw("same axis");
-
-  // Now get the normalized (to susy reference cross section) plots
-  TH2F* hExclusion_    = (TH2F*)file->Get(model + "_" + scenarioX + "_"+limitType+"_strength_UL");
-  TH2F* hExclusion_p1_ = (TH2F*)file->Get(model + "_" + scenarioX + "_"+limitType+"_p1s_strength_UL");
-  TH2F* hExclusion_m1_ = (TH2F*)file->Get(model + "_" + scenarioX + "_"+limitType+"_m1s_strength_UL");
-
-  TH2F* hExclusion    = interpolate(hExclusion_   ,"SW"); hExclusion    = interpolate(hExclusion   ,"SW"); hExclusion    = rebin(hExclusion   ,"SW"); hExclusion    = rebin(hExclusion   ,"SW"); 
-  TH2F* hExclusion_p1 = interpolate(hExclusion_p1_,"SW"); hExclusion_p1 = interpolate(hExclusion_p1,"SW"); hExclusion_p1 = rebin(hExclusion_p1,"SW"); hExclusion_p1 = rebin(hExclusion_p1,"SW");
-  TH2F* hExclusion_m1 = interpolate(hExclusion_m1_,"SW"); hExclusion_m1 = interpolate(hExclusion_m1,"SW"); hExclusion_m1 = rebin(hExclusion_m1,"SW"); hExclusion_m1 = rebin(hExclusion_m1,"SW");
-
-  TList *outline    = getOutline(hExclusion);
-  TList *outline_p1 = getOutline(hExclusion_p1);
-  TList *outline_m1 = getOutline(hExclusion_m1);
+  c2->SetName(hlimit_exp->GetTitle());
   
-  assert(outline    !=0);
-  assert(outline_p1 !=0);
-  assert(outline_m1 !=0);
 
-  // Draw the contours
+  // Now get the normalized (to susy reference cross section) plots and draw the contours
   int col = 0;
   int sty = 1;
   if(limitType == "expected") {col = kRed; sty = 7;}
   if(limitType == "observed") col = kBlack;
 
-
-  TIter next(outline);
-  TObject *contour = 0;
-  while ((contour = next())){ // loop over the possible disjoint regions
-    setStyle((TGraph2D*)(contour)   , col, sty, 4);
-    ((TGraph2D*)contour)->Draw("L"); 
-  }
-
-  TIter next_p1(outline_p1);
-  contour = 0;
-  while ((contour = next_p1())){ // loop over the possible disjoint regions
-    setStyle((TGraph2D*)(contour)   , col, sty, 2);
-    ((TGraph2D*)contour)->Draw("L"); 
-  }
-  TIter next_m1(outline_m1);
-  contour = 0;
-  while ((contour = next_m1())){ // loop over the possible disjoint regions
-    setStyle((TGraph2D*)(contour)   , col, sty, 2);
-    ((TGraph2D*)contour)->Draw("L"); 
-  }
-  c2->SetName(hlimit_exp->GetTitle());
-  
-  
   // ----------- Draw legend ----------------
   
   TLegend *leg = new TLegend(0.18,0.77,0.36,0.90);
@@ -446,10 +321,13 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
   leg->SetLineColor(kWhite);
   leg->SetShadowColor(kWhite);
 
-  leg->AddEntry((TGraph2D*)(outline_p1->First())," ","l");
-  if(limitType == "expected") leg->AddEntry((TGraph2D*)(outline->First()),"Expected, #pm 1 #sigma_{experiment}","l");
-  if(limitType == "observed") leg->AddEntry((TGraph2D*)(outline->First()),"Observed, #pm 1 #sigma_{theory}","l");
-  leg->AddEntry((TGraph2D*)(outline_m1->First())," ","l");
+  TString legendtag = "";
+  if(limitType == "expected") legendtag = "Expected, #pm 1 #sigma_{experiment}";  
+  if(limitType == "observed") legendtag = "Observed, #pm 1 #sigma_{theory}";
+
+  leg->AddEntry((TGraph*)(drawContours(file, model + "_" + scenarioX + "_"+limitType+"_p1s_strength_UL", col, sty, 2)->First())," ","l");
+  leg->AddEntry((TGraph*)(drawContours(file, model + "_" + scenarioX + "_"+limitType+"_strength_UL"    , col, sty, 4)->First()),legendtag,"l");
+  leg->AddEntry((TGraph*)(drawContours(file, model + "_" + scenarioX + "_"+limitType+"_m1s_strength_UL", col, sty, 2)->First())," ","l");
 
   hlimit_exp->SetTitle("");
 
@@ -460,46 +338,9 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
   if(limitType == "observed"){
 
     // Now get the normalized (to susy reference cross section) plots
-    TH2F* hExpExclusion_    = (TH2F*)file->Get(model + "_" + scenarioX + "_expected_strength_UL");
-    TH2F* hExpExclusion_p1_ = (TH2F*)file->Get(model + "_" + scenarioX + "_expected_p1s_strength_UL");
-    TH2F* hExpExclusion_m1_ = (TH2F*)file->Get(model + "_" + scenarioX + "_expected_m1s_strength_UL");
-    
-    TH2F* hExpExclusion    = interpolate(hExpExclusion_   ,"SW"); hExpExclusion    = interpolate(hExpExclusion   ,"SW"); hExpExclusion    = rebin(hExpExclusion   ,"SW"); //hExpExclusion    = rebin(hExpExclusion   ,"SW");
-    TH2F* hExpExclusion_p1 = interpolate(hExpExclusion_p1_,"SW"); hExpExclusion_p1 = interpolate(hExpExclusion_p1,"SW"); hExpExclusion_p1 = rebin(hExpExclusion_p1,"SW"); //hExpExclusion_p1 = rebin(hExpExclusion_p1,"SW");
-    TH2F* hExpExclusion_m1 = interpolate(hExpExclusion_m1_,"SW"); hExpExclusion_m1 = interpolate(hExpExclusion_m1,"SW"); hExpExclusion_m1 = rebin(hExpExclusion_m1,"SW"); //hExpExclusion_m1 = rebin(hExpExclusion_m1,"SW");
-
-    TList *exp_outline    = getOutline(hExpExclusion);
-    TList *exp_outline_p1 = getOutline(hExpExclusion_p1);
-    TList *exp_outline_m1 = getOutline(hExpExclusion_m1);
-    
-    assert(exp_outline    !=0);
-    assert(exp_outline_p1 !=0);
-    assert(exp_outline_m1 !=0);
-
-    TIter next(exp_outline);
-    TObject *contour = 0;
-    while ((contour = next())){ // loop over the possible disjoint regions
-      setStyle((TGraph2D*)(contour)   , kRed, 7, 4);
-      ((TGraph2D*)contour)->Draw("L"); 
-    }
-    
-    TIter next_p1(exp_outline_p1);
-    contour = 0;
-    while ((contour = next_p1())){ // loop over the possible disjoint regions
-      setStyle((TGraph2D*)(contour)   , kRed, 7, 2);
-      ((TGraph2D*)contour)->Draw("L"); 
-    }
-    TIter next_m1(exp_outline_m1);
-    contour = 0;
-    while ((contour = next_m1())){ // loop over the possible disjoint regions
-      setStyle((TGraph2D*)(contour)   , kRed, 7, 2);
-      ((TGraph2D*)contour)->Draw("L"); 
-    }
-    
-
-    leg->AddEntry((TGraph2D*)(exp_outline_p1->First())," ","l");
-    leg->AddEntry((TGraph2D*)(exp_outline->First()),"Expected, #pm 1 #sigma_{experiment}","l");
-    leg->AddEntry((TGraph2D*)(exp_outline_m1->First())," ","l");
+    leg->AddEntry((TGraph2D*)(drawContours(file, model + "_" + scenarioX + "_expected_p1s_strength_UL", kRed, 7, 2)->First())," ","l");
+    leg->AddEntry((TGraph2D*)(drawContours(file, model + "_" + scenarioX + "_expected_strength_UL"    , kRed, 7, 4)->First()),"Expected, #pm 1 #sigma_{experiment}","l");
+    leg->AddEntry((TGraph2D*)(drawContours(file, model + "_" + scenarioX + "_expected_m1s_strength_UL", kRed, 7, 2)->First())," ","l");
   }
 
 
@@ -564,28 +405,7 @@ void makePlots_smoothing(TString model = "T2tt", TString scenarioX = "", TString
   // ------------------ Excluded region --------------------------------
 
   
-  // ------ Strength -----
-  TCanvas *c2 = getExclusionPlot(file, model, scenarioX, polschema, pol, "s", limitType);
-  c2->cd();
-
-  // ----------- Draw text ----------------
-  
-  l.DrawLatex(0.20,0.972,"CMS");
-  l.DrawLatex(0.17,0.935,"#sqrt{s} = 8 TeV   L = 18.9 fb^{-1}");
-  
-  if(model == "T2tt")
-      l.DrawLatex(0.57,0.965,s_top);
-  
-  if(model == "T2bw"){
-    l.DrawLatex(0.63477,0.935,s_LSP);
-    l.DrawLatex(0.50,0.978,s_top);
-  }
-
-  c2->SaveAs(".pdf");
-  c2->SaveAs(".root");
-
   // Cross section UL
-
   TCanvas *c3 = getExclusionPlot(file, model, scenarioX, polschema, pol, "x", limitType);
   c3->cd();
 
@@ -605,6 +425,28 @@ void makePlots_smoothing(TString model = "T2tt", TString scenarioX = "", TString
   c3->SaveAs(".pdf");
   c3->SaveAs(".root");
   // --------------------------------------
+
+  return;
+
+  // ------ Strength -----
+  TCanvas *c2 = getExclusionPlot(file, model, scenarioX, polschema, pol, "s", limitType);
+  c2->cd();
+
+  // ----------- Draw text ----------------
+  
+  l.DrawLatex(0.20,0.972,"CMS");
+  l.DrawLatex(0.17,0.935,"#sqrt{s} = 8 TeV   L = 18.9 fb^{-1}");
+  
+  if(model == "T2tt")
+      l.DrawLatex(0.57,0.965,s_top);
+  
+  if(model == "T2bw"){
+    l.DrawLatex(0.63477,0.935,s_LSP);
+    l.DrawLatex(0.50,0.978,s_top);
+  }
+
+  c2->SaveAs(".pdf");
+  c2->SaveAs(".root");
 
 
   return;
