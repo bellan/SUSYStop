@@ -167,6 +167,12 @@ void setStyle(TGraph2D* obj, int color, int style, int width = 5){
   obj->SetLineStyle(style);
 }
 
+void setStyle(TGraph* obj, int color, int style, int width = 5){
+  obj->SetLineWidth(width);
+  obj->SetLineColor(color);
+  obj->SetLineStyle(style);
+}
+
 
 
 void drawCMSInscription(){
