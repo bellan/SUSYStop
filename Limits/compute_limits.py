@@ -79,7 +79,8 @@ for model in models:
                 print command
                 failure4, output4 = commands.getstatusoutput(command)
                 failure = failure + " " + str(failure4)
-                if debug: print output4
+                #if debug: print output4
+                print output4
 
 ### ---------------------------------------------------------------------------------------------------------------- ###
 

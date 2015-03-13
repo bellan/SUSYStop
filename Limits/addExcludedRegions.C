@@ -81,8 +81,14 @@ void addExcludedRegions(TString model = "T2tt", TString scenarioX = "", TString 
   file->Close();
 }
 
+#include "smoothing/interpolate.h"
+#include "smoothing/SmoothingUtils.C"
+#include "smoothing/LimitSmoothing.C"
 
-std::pair<TH2F*,TH2F*> getExcludedPoints(TH2F* h2dXSecUL, int sigma, double referenceXSecStrength, bool divideByReference) {
+std::pair<TH2F*,TH2F*> getExcludedPoints(TH2F* h2dXSecUL_, int sigma, double referenceXSecStrength, bool divideByReference) {
+
+  //TH2F *h2dXSecUL = rebin(h2dXSecUL_,"SW"); h2dXSecUL = rebin(h2dXSecUL,"SW"); h2dXSecUL = rebin(h2dXSecUL,"SW");
+  TH2F *h2dXSecUL = h2dXSecUL_;
 
   string mass="stop_xsec";
 
