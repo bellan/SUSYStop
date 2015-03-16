@@ -20,8 +20,8 @@
 #include <TROOT.h>
 #include <TObjArray.h>
 #include <TMultiGraph.h>
-#include "./TGraphSmooth.h"
-//#include <TGraphSmooth.h>
+//#include "./myTGraphSmooth.h"
+#include <TGraphSmooth.h>
 
 #include <ctime>
 #include <iostream>
@@ -179,12 +179,11 @@ TList *getOutline(TH2F *histo){
 
 TList *drawContours(TFile *file, const TString &histoName, int col, int sty, int size){
   TH2F* hExclusion_    = (TH2F*)file->Get(histoName);
-  //TH2F* hExclusion    = rebin(hExclusion_   ,"SW"); //hExclusion    = rebin(hExclusion   ,"SW");
+  //TH2F* hExclusion    = rebin(hExclusion_   ,"SW"); hExclusion    = rebin(hExclusion   ,"SW");
   TH2F* hExclusion    = (TH2F*)hExclusion_->Clone();
   TList *outline    = getOutline(hExclusion);
   assert(outline    !=0);
 
-  TGraphSmooth *gs = new TGraphSmooth("normal");
   TIter next(outline);
   TObject *contour = 0;
   int ncontours = 0;
@@ -236,8 +235,10 @@ TList *drawContours(TFile *file, const TString &histoName, int col, int sty, int
    
     cout << "Points division " << fNin << " " << typeA << " " << typeB << endl; 
 
-    Double_t *xinAB = new Double_t[fNin+1];
-    Double_t *yinAB = new Double_t[fNin+1];
+    TGraphSmooth *gs = new TGraphSmooth("normal");
+
+    Double_t *xinAB = new Double_t[fNin+3];
+    Double_t *yinAB = new Double_t[fNin+3];
 
 
     TGraph *graphA = new TGraph(typeA,xinA,yinA);
@@ -245,13 +246,28 @@ TList *drawContours(TFile *file, const TString &histoName, int col, int sty, int
     TGraph* smoothedA = (TGraph*)gs->SmoothLowess(graphA, "",       0.2);
     setStyle(smoothedA   , kBlue, sty, size);
     //smoothedA->DrawClone("LX"); 
-
-    for(int i=0; i < smoothedA->GetN(); ++i){
-      xinAB[i] = smoothedA->GetX()[i];
-      yinAB[i] = smoothedA->GetY()[i];
+    for(int i=0; i < graphA->GetN(); ++i){
+      cout << "Arecheck: " << i << " x: " << graphA->GetX()[i] << " y: " << graphA->GetY()[i] << endl;
     }
-    int nAB = smoothedA->GetN();
+    xinAB[0] = xinA[0];
+    yinAB[0] = yinA[0];
+    cout << "S: 0 " << xinAB[0] << " " << yinAB[0] << endl;  
+    int nAB = smoothedA->GetN()+1;
     
+    for(int i=0; i < smoothedA->GetN(); ++i){
+      xinAB[i+1] = smoothedA->GetX()[i];
+      yinAB[i+1] = smoothedA->GetY()[i];
+      cout << "S: " << i+1 << " " << xinAB[i+1] << " " << yinAB[i+1] << endl;  
+    }
+    if(xinA[graphA->GetN()-1] != xinAB[smoothedA->GetN()] || yinA[graphA->GetN()-1] != yinAB[smoothedA->GetN()]){
+      xinAB[smoothedA->GetN()+1] = xinA[graphA->GetN()-1];
+      yinAB[smoothedA->GetN()+1] = yinA[graphA->GetN()-1];
+      cout << "S: " << smoothedA->GetN()+1  << " " << xinAB[smoothedA->GetN()+1] << " " << yinAB[smoothedA->GetN()+1] << endl;  
+      ++nAB;
+    }
+
+
+
     if (typeB != 0){ 
       TGraph *graphB = new TGraph(typeB,xinB,yinB);
       //TGraph* smoothedB = graphB;
@@ -262,8 +278,8 @@ TList *drawContours(TFile *file, const TString &histoName, int col, int sty, int
       
       for(int i=0; i < smoothedB->GetN(); ++i){
 	cout << i <<endl;
-	xinAB[i+nAB] = smoothedB->GetX()[i];
-	yinAB[i+nAB] = smoothedB->GetY()[i];
+	xinAB[i+nAB] = smoothedB->GetX()[smoothedB->GetN()-i-1];
+	yinAB[i+nAB] = smoothedB->GetY()[smoothedB->GetN()-i-1];
       }
       nAB += smoothedB->GetN();
   }
@@ -275,6 +291,8 @@ TList *drawContours(TFile *file, const TString &histoName, int col, int sty, int
     //  yinA[i+typeA] = yinB[i];
     //}
 
+  
+  
     TGraph* smoothedAB = new TGraph(nAB,xinAB,yinAB);
     setStyle(smoothedAB   , col, sty, size);
     smoothedAB->DrawClone("LX"); 
