@@ -176,6 +176,41 @@ TList *getOutline(TH2F *histo){
   return contLevel; 
 }
 
+//class SmoothCurve{
+//  SmoothCurve();
+//};
+
+std::pair<int,int> split(int fNin, const Double_t *xin, const Double_t *yin, Double_t *xoutA, Double_t *youtA, Double_t *xoutB, Double_t *youtB){
+  double max = *std::max_element(xin, xin + fNin); 
+    cout << "MAX " << max <<endl;
+    int typeA = 0;
+    int typeB = 0;
+
+    bool turningPoint = false;
+    for (int i=0;i<fNin;++i) {
+      if(xin[i] <= max && (!turningPoint || (max - xin[i]) < 5) && typeB == 0){
+	xoutA[typeA] = xin[i];
+	youtA[typeA] = yin[i];
+	++typeA;
+	cout << "A: " << i << " x: " << xoutA[i] << " y: " << youtA[i] << endl;
+      }
+      else{
+	if(typeB == 0){
+	  xoutB[typeB] = xin[i-1];
+	  youtB[typeB] = yin[i-1];
+	  cout << "B: "<< i << " " << typeB << " x: " << xoutB[typeB] << " y: " << youtB[typeB] << endl;
+	  ++typeB;
+	}
+	xoutB[typeB] = xin[i];
+	youtB[typeB] = yin[i];
+	cout << "B: "<< i << " " << typeB << " x: " << xoutB[typeB] << " y: " << youtB[typeB] << endl;
+	++typeB;
+      }
+      if(!turningPoint && xin[i] == max) turningPoint = true;
+    }
+    return std::make_pair(typeA,typeB);
+}
+
 
 TList *drawContours(TFile *file, const TString &histoName, int col, int sty, int size){
   TH2F* hExclusion_    = (TH2F*)file->Get(histoName);
@@ -199,10 +234,10 @@ TList *drawContours(TFile *file, const TString &histoName, int col, int sty, int
 
     if(fNin < 10) {cout << "Rejected: " << fNin << endl; continue;}
 
-    Double_t *xinA = new Double_t[fNin+1];
-    Double_t *yinA = new Double_t[fNin+1];
-    Double_t *xinB = new Double_t[fNin];
-    Double_t *yinB = new Double_t[fNin];
+    Double_t *xoutA = new Double_t[fNin+1];
+    Double_t *youtA = new Double_t[fNin+1];
+    Double_t *xoutB = new Double_t[fNin];
+    Double_t *youtB = new Double_t[fNin];
 
     int typeA = 0;
     int typeB = 0;
@@ -210,51 +245,26 @@ TList *drawContours(TFile *file, const TString &histoName, int col, int sty, int
     Double_t * xin = fGin->GetX();
     Double_t * yin = fGin->GetY();
 
-    double max = *std::max_element(xin, xin + fNin); 
-    cout << "MAX " << max <<endl;
-    bool turningPoint = false;
-    for (int i=0;i<fNin;++i) {
-      if(xin[i] <= max && (!turningPoint || (max - xin[i]) < 5)){
-	xinA[typeA] = xin[i];
-	yinA[typeA] = yin[i];
-	++typeA;
-	cout << "A: " << i << " x: " << xinA[i] << " y: " << yinA[i] << endl;
-      }
-      else{
-	if(typeB == 0){
-	  xinB[typeB] = xin[i-1];
-	  yinB[typeB] = yin[i-1];
-	  cout << "B: "<< i << " " << typeB << " x: " << xinB[typeB] << " y: " << yinB[typeB] << endl;
-	  ++typeB;
-	}
-	xinB[typeB] = xin[i];
-	yinB[typeB] = yin[i];
-	cout << "B: "<< i << " " << typeB << " x: " << xinB[typeB] << " y: " << yinB[typeB] << endl;
-	++typeB;
-      }
-      if(xin[i] == max) turningPoint = true;
-    }
-   
+    std::pair<int,int> points = split(fNin,xin,yin,xoutA,youtA,xoutB,youtB);
+    typeA = points.first;
+    typeB = points.second;
+
     cout << "Points division " << fNin << " " << typeA << " " << typeB << endl; 
 
     TGraphSmooth *gs = new TGraphSmooth("normal");
 
-    Double_t *xinAB = new Double_t[fNin+3];
-    Double_t *yinAB = new Double_t[fNin+3];
+    Double_t *xoutAB = new Double_t[fNin+3];
+    Double_t *youtAB = new Double_t[fNin+3];
 
-    for(int i=0; i < typeA; ++i) cout << "AA: " << i << " " << xinA[i] << " " << yinA[i] << endl;
-
-    TGraph *graphA = new TGraph(typeA,xinA,yinA);
+    TGraph *graphA = new TGraph(typeA,xoutA,youtA);
     //TGraph* smoothedA = graphA;
-    TGraph* smoothedA = (TGraph*)gs->SmoothLowess(graphA, "",       0.2);
+    TGraph* smoothedA = (TGraph*)gs->SmoothLowess(graphA, "",       0.2, 3, 12.5);
     setStyle(smoothedA   , kBlue, sty, size);
     //smoothedA->DrawClone("LX"); 
-    for(int i=0; i < graphA->GetN(); ++i){
-      cout << "Arecheck: " << i << " x: " << xinA[i] << " y: " << yinA[i] << endl;
-    }
-    xinAB[0] = xinA[0];
-    yinAB[0] = yinA[0];
-    cout << "S: 0 " << xinAB[0] << " " << yinAB[0] << endl;  
+
+    xoutAB[0] = xoutA[0];
+    youtAB[0] = youtA[0];
+
     int nAB = smoothedA->GetN()+1;
     
     Double_t *xsmoothedA = smoothedA->GetX();
@@ -262,28 +272,23 @@ TList *drawContours(TFile *file, const TString &histoName, int col, int sty, int
 
     
     for(int i=0; i < smoothedA->GetN(); ++i){
-      xinAB[i+1] = xsmoothedA[i];
-      yinAB[i+1] = ysmoothedA[i];
-      cout << "S: " << i+1 << " " << xinAB[i+1] << " " << yinAB[i+1] << endl;  
+      xoutAB[i+1] = xsmoothedA[i];
+      youtAB[i+1] = ysmoothedA[i];
     }
 
-    for(int i=0; i < typeA; ++i) cout << "AAA: " << i << " " << xinA[i] << " " << yinA[i] << endl;
 
-
-    if((xinA[graphA->GetN()-1] != xinAB[smoothedA->GetN()] || yinA[graphA->GetN()-1] != yinAB[smoothedA->GetN()])){
-      cout<< "Precheck: " << typeA << " " << graphA->GetN()-1 << " " << xinA[graphA->GetN()-1] << " " << yinA[graphA->GetN()-1] << endl;
-      xinAB[smoothedA->GetN()+1] = xinA[graphA->GetN()-1];
-      yinAB[smoothedA->GetN()+1] = yinA[graphA->GetN()-1];
-      cout << "S: " << smoothedA->GetN()+1  << " " << xinAB[smoothedA->GetN()+1] << " " << yinAB[smoothedA->GetN()+1] << endl;  
+    if((xoutA[graphA->GetN()-1] != xoutAB[smoothedA->GetN()] || youtA[graphA->GetN()-1] != youtAB[smoothedA->GetN()])){
+      xoutAB[smoothedA->GetN()+1] = xoutA[graphA->GetN()-1];
+      youtAB[smoothedA->GetN()+1] = youtA[graphA->GetN()-1];
       ++nAB;
     }
 
 
 
     if (typeB != 0){ 
-      TGraph *graphB = new TGraph(typeB,xinB,yinB);
+      TGraph *graphB = new TGraph(typeB,xoutB,youtB);
       //TGraph* smoothedB = graphB;
-      TGraph* smoothedB = (TGraph*)gs->SmoothLowess(graphB, "",       0.2);
+      TGraph* smoothedB = (TGraph*)gs->SmoothLowess(graphB, "",       0.2, 3, 12.5);
       setStyle(smoothedB   , kGreen, sty, size);
       //smoothedB->DrawClone("LX"); 
       if(graphB) delete graphB;
@@ -292,9 +297,8 @@ TList *drawContours(TFile *file, const TString &histoName, int col, int sty, int
       Double_t *ysmoothedB = smoothedB->GetY();
 
       for(int i=0; i < smoothedB->GetN(); ++i){
-	cout << i <<endl;
-	xinAB[i+nAB] = xsmoothedB[smoothedB->GetN()-i-1];
-	yinAB[i+nAB] = ysmoothedB[smoothedB->GetN()-i-1];
+	xoutAB[i+nAB] = xsmoothedB[smoothedB->GetN()-i-1];
+	youtAB[i+nAB] = ysmoothedB[smoothedB->GetN()-i-1];
       }
       nAB += smoothedB->GetN();
   }
@@ -302,24 +306,30 @@ TList *drawContours(TFile *file, const TString &histoName, int col, int sty, int
     
     //for(int i=0; i<typeB; ++i){
     //  cout << i << endl;
-    //  xinA[i+typeA] = xinB[i];
-    //  yinA[i+typeA] = yinB[i];
+    //  xoutA[i+typeA] = xoutB[i];
+    //  youtA[i+typeA] = youtB[i];
     //}
+    
+    cout << "------------------------------------------------------------------" << endl;
+    cout<< histoName << " contour number: " << ncontours << endl;
+    for(int i=0;i<nAB;++i) cout << "Smoothed: " << i << " " << xoutAB[i] << " " << youtAB[i] << endl;
+    cout << "------------------------------------------------------------------" << endl;
 
   
-  
-    TGraph* smoothedAB = new TGraph(nAB,xinAB,yinAB);
+    TGraph* smoothedAB = new TGraph(nAB,xoutAB,youtAB);
     setStyle(smoothedAB   , col, sty, size);
     smoothedAB->DrawClone("LX"); 
 
     //TGraph* smoothed = (TGraph*)gs->SmoothKern  ((TGraph*)contour, "normal", 5.0);
     //TGraph* smoothed = (TGraph*)gs->SmoothLowess((TGraph*)contour, "",       0.2);
     //TGraph* smoothed = (TGraph*)gs->SmoothSuper ((TGraph*)contour, "",       3);
-    TGraph* smoothed = (TGraph*)contour;  
-
-    setStyle(smoothed   , kBlack, sty, 1);
-    smoothed->DrawClone("LX"); 
     
+    // uncomment to have the original curve superimposed to the smoothed one.
+    //TGraph* smoothed = (TGraph*)contour;  
+    //setStyle(smoothed   , kBlack, sty, 1);
+    //smoothed->DrawClone("LX"); 
+    // --------------------
+
     //for(unsigned i=0; i < ((TGraph*)contour)->GetN(); ++i){
     //  double x,y;
     //  ((TGraph*)contour)->GetPoint(i,x,y);
