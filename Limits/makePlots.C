@@ -20,10 +20,9 @@
 #include <TROOT.h>
 #include <TObjArray.h>
 #include <TMultiGraph.h>
+#include <TGraphSmooth.h>
 
 #include "drawWithStyle.C"
-
-
 
 Bool_t equal(double number, double reference, double tolerance = 1e-3, double epsilon = 1e-6) {
   if ((TMath::Abs(number) < epsilon) && (TMath::Abs(reference) < epsilon))
@@ -206,6 +205,14 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
   assert(outline_p1 !=0);
   assert(outline_m1 !=0);
  
+  // TMultiGraph* outline_smooth = new TMultiGraph;
+  // TGraphSmooth *gs = new TGraphSmooth("normal");
+  // TList *l = outline->GetListOfGraphs();
+  // TIter next(l);
+  // while (TObject *obj = next()){
+  //   outline_smooth->Add((TGraph*)gs->SmoothLowess((TGraph*)obj,"",0.2));
+  // }
+  //outline_smooth->DrawClone("LX");
   outline    ->Draw("l");
   outline_p1 ->Draw("l");
   outline_m1 ->Draw("l");

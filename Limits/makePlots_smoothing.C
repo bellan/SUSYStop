@@ -182,7 +182,7 @@ TList *getOutline(TH2F *histo){
 
 std::pair<int,int> split(int fNin, const Double_t *xin, const Double_t *yin, Double_t *xoutA, Double_t *youtA, Double_t *xoutB, Double_t *youtB){
   double max = *std::max_element(xin, xin + fNin); 
-    cout << "MAX " << max <<endl;
+  //cout << "MAX " << max <<endl;
     int typeA = 0;
     int typeB = 0;
 
@@ -192,18 +192,18 @@ std::pair<int,int> split(int fNin, const Double_t *xin, const Double_t *yin, Dou
 	xoutA[typeA] = xin[i];
 	youtA[typeA] = yin[i];
 	++typeA;
-	cout << "A: " << i << " x: " << xoutA[i] << " y: " << youtA[i] << endl;
+	//cout << "A: " << i << " x: " << xoutA[i] << " y: " << youtA[i] << endl;
       }
       else{
 	if(typeB == 0){
 	  xoutB[typeB] = xin[i-1];
 	  youtB[typeB] = yin[i-1];
-	  cout << "B: "<< i << " " << typeB << " x: " << xoutB[typeB] << " y: " << youtB[typeB] << endl;
+	  //cout << "B: "<< i << " " << typeB << " x: " << xoutB[typeB] << " y: " << youtB[typeB] << endl;
 	  ++typeB;
 	}
 	xoutB[typeB] = xin[i];
 	youtB[typeB] = yin[i];
-	cout << "B: "<< i << " " << typeB << " x: " << xoutB[typeB] << " y: " << youtB[typeB] << endl;
+	//cout << "B: "<< i << " " << typeB << " x: " << xoutB[typeB] << " y: " << youtB[typeB] << endl;
 	++typeB;
       }
       if(!turningPoint && xin[i] == max) turningPoint = true;
@@ -249,7 +249,7 @@ TList *drawContours(TFile *file, const TString &histoName, int col, int sty, int
     typeA = points.first;
     typeB = points.second;
 
-    cout << "Points division " << fNin << " " << typeA << " " << typeB << endl; 
+    //cout << "Points division " << fNin << " " << typeA << " " << typeB << endl; 
 
     TGraphSmooth *gs = new TGraphSmooth("normal");
 
@@ -312,11 +312,229 @@ TList *drawContours(TFile *file, const TString &histoName, int col, int sty, int
     
     cout << "------------------------------------------------------------------" << endl;
     cout<< histoName << " contour number: " << ncontours << endl;
-    for(int i=0;i<nAB;++i) cout << "Smoothed: " << i << " " << xoutAB[i] << " " << youtAB[i] << endl;
+    int nAB_clean=0;
+    Double_t *xoutAB_clean = new Double_t[nAB];
+    Double_t *youtAB_clean = new Double_t[nAB];
+    for(int i=0;i<nAB;++i){
+      cout << "Smoothed: " << i << " " << xoutAB[i] << " " << youtAB[i] << endl;
+      
+      bool refine = true;
+
+      if(refine){
+	if(histoName == "T2bw_0p75_expected_m1s_strength_UL" && ncontours == 2)
+	  if(i == 0) continue;
+	if(histoName == "T2bw_0p50_expected_m1s_strength_UL" && ncontours == 2){
+	  if(i > 129 && i < 145) {cout << "removing " << i << endl; continue;}
+	  if(i == 145){
+	    cout << "replacing " << i << endl;
+	    xoutAB_clean[nAB_clean] = xoutAB[129];
+	    youtAB_clean[nAB_clean] = 0;
+	    ++nAB_clean;
+	    continue;
+	  }
+	}
+	if(histoName == "T2bw_0p50_observed_p1s_strength_UL" && ncontours == 2)
+	  if(i == 115 || i == 116 || i == 117) continue;
+	
+	if(histoName == "T2bw_0p50_expected_strength_UL" && ncontours == 3)
+	  if(i == 113 || i == 114 || i == 115 || i == 116 || i == 117) continue;
+	
+	if(histoName == "T2bw_0p50_observed_strength_UL" && ncontours ==2){
+	  if(i>119 && i < 131 || i == 115 || i == 116 || i == 117) continue;
+	  if(i == 131){
+	    cout << "replacing " << i << endl;
+	    xoutAB_clean[nAB_clean] = xoutAB[120];
+	    youtAB_clean[nAB_clean] = 0;
+	    ++nAB_clean;
+	    continue;
+	  }
+	}
+	if(histoName == "T2bw_0p50_expected_m1s_strength_UL" && ncontours==1)
+	  if(i >3 && i<8) continue;
+	
+	if(histoName == "T2bw_0p50_observed_m1s_strength_UL" && ncontours==1){
+	  if(i==0) continue;
+	  if(i==1){
+	    cout << "replacing " << i << endl;
+	    xoutAB_clean[nAB_clean] = xoutAB[1];
+	    youtAB_clean[nAB_clean] = (youtAB[1]+youtAB[2])/2.;
+	    ++nAB_clean;
+	    continue;
+	  }
+	}
+	
+	if(histoName == "T2tt__observed_p1s_strength_UL" && ncontours==1){
+	  if(i==16) continue;
+	  if(i<16 && i > 0){
+	    cout << "Sorting " << i << endl;
+	    xoutAB_clean[nAB_clean] = xoutAB[16-i];
+	    youtAB_clean[nAB_clean] = youtAB[16-i];
+	    ++nAB_clean;
+	    continue;
+	  }
+	}
+	
+	if(histoName == "T2tt__observed_m1s_strength_UL" && ncontours==1){
+	  if(i<22 && i > 0){
+	    cout << "Sorting " << i << endl;
+	    xoutAB_clean[nAB_clean] = xoutAB[22-i];
+	    youtAB_clean[nAB_clean] = youtAB[22-i];
+	    ++nAB_clean;
+	    continue;
+	  }
+	}
+	
+	if(histoName == "T2tt__expected_p1s_strength_UL" && ncontours==1){
+	  if(i==18) continue;
+	  if(i<18 && i > 0){
+	    cout << "Sorting " << i << endl;
+	    xoutAB_clean[nAB_clean] = xoutAB[18-i];
+	    youtAB_clean[nAB_clean] = youtAB[18-i];
+	    ++nAB_clean;
+	    continue;
+	  }
+	}
+	if(histoName == "T2tt__expected_strength_UL" && ncontours==1){
+	  if(i==16) continue;
+	  if(i<15 && i > 0){
+	    cout << "Sorting " << i << endl;
+	    xoutAB_clean[nAB_clean] = xoutAB[15-i];
+	    youtAB_clean[nAB_clean] = youtAB[15-i];
+	    ++nAB_clean;
+	    continue;
+	  }
+	}
+	if(histoName == "T2tt__expected_m1s_strength_UL" && ncontours==1){
+	  if(i==19) continue;
+	  if(i<19 && i > 0){
+	    cout << "Sorting " << i << endl;
+	    xoutAB_clean[nAB_clean] = xoutAB[19-i];
+	    youtAB_clean[nAB_clean] = youtAB[19-i];
+	    ++nAB_clean;
+	    continue;
+	  }
+	}
+
+	if(histoName=="T2bw_0p25_observed_strength_UL" && ncontours==1){
+	  if(i == 0 || i ==1 || i == 2 || i==21 || i ==22) continue;
+	  if(i==3){
+	    xoutAB_clean[nAB_clean] = 200;
+	    youtAB_clean[nAB_clean] = youtAB[i];
+	    ++nAB_clean;
+	    continue;
+	  }
+	}
+
+	if(histoName=="T2bw_0p25_observed_strength_UL" && ncontours==2){
+	  if(i == 0){
+	    xoutAB_clean[nAB_clean] = xoutAB[175];
+	    youtAB_clean[nAB_clean] = youtAB[175];
+	    ++nAB_clean;
+	    continue;	    
+	  }
+	  if(i == 1 || i == 18 || (i>3 && i<11) || i ==35 || i == 37) continue;
+	  if(i>0 && i <35){
+	    xoutAB_clean[nAB_clean] = fGin->GetX()[i];
+	    youtAB_clean[nAB_clean] = fGin->GetY()[i];
+	    ++nAB_clean;
+	    continue;
+	  }
+	}
+	if(histoName=="T2bw_0p25_observed_p1s_strength_UL" && ncontours==1){
+	  if(i == 0 || i == 1 || i == 2 || i == 23) continue;
+	  if(i==3){
+	    xoutAB_clean[nAB_clean] = 200;
+	    youtAB_clean[nAB_clean] = youtAB[i];
+	    ++nAB_clean;
+	    continue;
+	  }
+
+	}
+
+	if(histoName=="T2bw_0p25_observed_p1s_strength_UL" && ncontours==2)
+	  if(i == 0) continue;
+
+	if(histoName=="T2bw_0p25_observed_m1s_strength_UL" && ncontours==1){
+	  if(i == 0 || i ==1 || i == 2) continue;
+	  if(i==3){
+	    xoutAB_clean[nAB_clean] = 200;
+	    youtAB_clean[nAB_clean] = youtAB[i];
+	    ++nAB_clean;
+	    continue;
+	  }  
+	}
+
+	if(histoName=="T2bw_0p25_expected_strength_UL" && ncontours==1){
+	  if(i==0 || i==34 || i==35) continue;
+	  if(i==1){
+	    xoutAB_clean[nAB_clean] = 200;
+	    youtAB_clean[nAB_clean] = youtAB[i];
+	    ++nAB_clean;
+	    continue;
+	  }
+	}
+
+	if(histoName=="T2bw_0p25_expected_p1s_strength_UL" && ncontours == 7)
+	  if(i >72 && i <78) continue;
+	
+	
+
+	if(histoName=="T2bw_0p25_expected_m1s_strength_UL" && ncontours == 1){
+	  if(i == 0){
+	    xoutAB_clean[nAB_clean] = 200;
+	    youtAB_clean[nAB_clean] = youtAB[i];
+	    ++nAB_clean;
+	    continue;
+	  }
+	  if(i > 18 && i < 25) continue;
+	  if(i == 25) { // link to the other stub   
+	    xoutAB_clean[nAB_clean] = 311.271;
+	    youtAB_clean[nAB_clean] = 188.558;
+	    ++nAB_clean;
+	    continue;
+	  }
+	}
+	
+	if(histoName=="T2bw_0p25_expected_m1s_strength_UL" && ncontours == 4)
+	  if(i > 110 && i < 117) continue;
+      
+	if(histoName == "T2bw_0p25_expected_m1s_strength_UL" && ncontours == 2){
+	  if(i>13 && i < 22)  continue;
+	  if(i == 23) { // link to the other stub  
+	    xoutAB_clean[nAB_clean] = 275;
+	    youtAB_clean[nAB_clean] = 36.0118;
+	    ++nAB_clean;
+	    continue;
+	  }
+	}
+	if(histoName == "T2bw_0p25_expected_m1s_strength_UL" && ncontours == 6){
+	  if(i == 0 || i == 1) continue;
+	  if(i == 2){
+	    xoutAB_clean[nAB_clean] = xoutAB[i];
+	    youtAB_clean[nAB_clean] = 0;
+	    ++nAB_clean;
+	    continue;
+	  }
+	  if(i>16 && i < 24) continue;
+	}
+
+
+
+
+
+      }
+      
+      
+      xoutAB_clean[nAB_clean] = xoutAB[i];
+      youtAB_clean[nAB_clean] = youtAB[i];
+      ++nAB_clean;
+    }
     cout << "------------------------------------------------------------------" << endl;
 
+    for(int i=0;i<nAB_clean;++i) cout << "Final order: " << i << " " << xoutAB_clean[i] << " " << youtAB_clean[i] << endl;
   
-    TGraph* smoothedAB = new TGraph(nAB,xoutAB,youtAB);
+    TGraph* smoothedAB = new TGraph(nAB_clean,xoutAB_clean,youtAB_clean);
+    //TGraph* smoothedAB = new TGraph(nAB,xoutAB,youtAB);
     setStyle(smoothedAB   , col, sty, size);
     smoothedAB->DrawClone("LX"); 
 
@@ -325,9 +543,10 @@ TList *drawContours(TFile *file, const TString &histoName, int col, int sty, int
     //TGraph* smoothed = (TGraph*)gs->SmoothSuper ((TGraph*)contour, "",       3);
     
     // uncomment to have the original curve superimposed to the smoothed one.
-    //TGraph* smoothed = (TGraph*)contour;  
-    //setStyle(smoothed   , kBlack, sty, 1);
-    //smoothed->DrawClone("LX"); 
+    //TGraph* original = (TGraph*)contour;  
+    //setStyle(original   , kBlack, sty, 1);
+    //for(int j=0; j < original->GetN(); ++j) cout << "Original " << j << "  " << original->GetX()[j] << " " << original->GetY()[j] << endl;
+    //original->DrawClone("LX"); 
     // --------------------
 
     //for(unsigned i=0; i < ((TGraph*)contour)->GetN(); ++i){
