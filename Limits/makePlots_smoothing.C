@@ -631,8 +631,10 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
 
   // ----------- Draw legend ----------------
   
-  TLegend *leg = new TLegend(0.18,0.77,0.36,0.90);
-  leg->SetTextSize(0.025);
+  //TLegend *leg = new TLegend(0.18,0.77,0.36,0.90);
+  //leg->SetTextSize(0.025);
+  TLegend *leg = new TLegend(0.18,0.73,0.36,0.86);
+  leg->SetTextSize(0.0325);
   leg->SetFillColor(kWhite);
   leg->SetLineColor(kWhite);
   leg->SetShadowColor(kWhite);
@@ -692,13 +694,13 @@ void makePlots_smoothing(TString model = "T2tt", TString scenarioX = "", TString
   
   l.DrawLatex(0.20,0.972,"CMS");
   l.DrawLatex(0.17,0.935,"#sqrt{s} = 8 TeV   L = 18.9 fb^{-1}");
-  
+ 
   TString s_top;
   char *s_LSP = new char[100];
   
   if(model == "T2tt"){
     s_top = "pp#rightarrow #tilde{t} #tilde{t}*; #tilde{t}#rightarrow t + #tilde{#chi}^{0}";
-    l.DrawLatex(0.57,0.965,s_top);
+    l.DrawLatex(0.20,0.965,s_top);
   }
   if(model == "T2bw"){
     s_top = "pp#rightarrow #tilde{t} #tilde{t}*; #tilde{t}#rightarrow b + #tilde{#chi}^{+}; #tilde{#chi}^{+} #rightarrow W^{+} + #tilde{#chi}^{0}";
@@ -726,16 +728,24 @@ void makePlots_smoothing(TString model = "T2tt", TString scenarioX = "", TString
   c3->cd();
 
   // ----------- Draw text ----------------
+
+  //l.DrawLatex(0.20,0.972,"CMS");
+  //l.DrawLatex(0.17,0.935,"#sqrt{s} = 8 TeV   L = 18.9 fb^{-1}");
   
-  l.DrawLatex(0.20,0.972,"CMS");
-  l.DrawLatex(0.17,0.935,"#sqrt{s} = 8 TeV   L = 18.9 fb^{-1}");
-  
+  l.SetTextSize(0.04);
+  l.DrawLatex(0.27,0.88,"CMS #sqrt{s} = 8 TeV   L = 18.9 fb^{-1}");
+  l.SetTextSize(0.05);
+
   if(model == "T2tt")
-      l.DrawLatex(0.57,0.965,s_top);
-  
+    //l.DrawLatex(0.57,0.965,s_top);
+    l.DrawLatex(0.33,0.965,s_top);
+
   if(model == "T2bw"){
-    l.DrawLatex(0.63477,0.935,s_LSP);
-    l.DrawLatex(0.50,0.978,s_top);
+    //l.DrawLatex(0.63477,0.935,s_LSP);
+    //l.DrawLatex(0.50,0.978,s_top);
+    l.DrawLatex(0.1,0.965,s_top);
+    l.DrawLatex(0.75,0.965,s_LSP);
+
   }
 
   c3->SaveAs(".pdf");
@@ -752,6 +762,7 @@ void makePlots_smoothing(TString model = "T2tt", TString scenarioX = "", TString
   
   l.DrawLatex(0.20,0.972,"CMS");
   l.DrawLatex(0.17,0.935,"#sqrt{s} = 8 TeV   L = 18.9 fb^{-1}");
+  
   
   if(model == "T2tt")
       l.DrawLatex(0.57,0.965,s_top);
