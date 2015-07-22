@@ -26,6 +26,7 @@ def calculatedSigma_UL(model, scenarioX, region, polschema):
 
     f = ROOT.TFile(fname)
     hEff  = f.Get("Efficiency")
+    hTheounc = f.Get("TotalSysUnc")
 
     hEff.GetZaxis().SetRangeUser(0,1)
 
@@ -118,7 +119,8 @@ def calculatedSigma_UL(model, scenarioX, region, polschema):
                 hObsR.SetBinContent(i,j,0)
 
     fout.cd()
-    hEff.Write()
+    hEff.Write(model+"_efficiency")
+    hTheounc.Write(model+"_theouncertainty")
     hExp.Write()
     hExp_m1s.Write()
     hExp_p1s.Write()
@@ -167,7 +169,9 @@ for model in models:
         histos1p = []
         histos1m = []
         histosObs = []
-        
+        hefficiencies = []
+        hTheoUncs = []
+
         histosL = []
         histosR = []
         
@@ -182,6 +186,9 @@ for model in models:
 
             histosL.append(copy.deepcopy(f.Get(model+"_expected_L_xsection_UL")))
             histosR.append(copy.deepcopy(f.Get(model+"_expected_R_xsection_UL")))
+
+            hefficiencies.append(copy.deepcopy(f.Get(model+"_efficiency")))
+            hTheoUncs.append(copy.deepcopy(f.Get(model+"_theouncertainty")))
 
         best = ROOT.TH2F(str(model)+"_"+str(scenarioX)+"_expected_xsection_UL",
                          str(model)+"_"+str(scenarioX)+"_expected_xsection_UL",
@@ -205,6 +212,13 @@ for model in models:
         bestregionP = best.Clone(str(model)+"_"+str(scenarioX)+"_bestRegion")
         bestregionP.SetTitle    (str(model)+"_"+str(scenarioX)+"_bestRegion")
 
+        bestefficiency = best.Clone(str(model)+"_"+str(scenarioX)+"_bestEfficiency")
+        bestefficiency.SetTitle    (str(model)+"_"+str(scenarioX)+"_bestEfficiency")
+
+        besttheoun = best.Clone(str(model)+"_"+str(scenarioX)+"_bestTheouncertainty")
+        besttheoun.SetTitle    (str(model)+"_"+str(scenarioX)+"_bestTheouncertainty")
+
+
         for x in range(1,best.GetNbinsX()+1):
             for y in range(1,best.GetNbinsY()+1):
                 bestpoint = 10000
@@ -223,7 +237,11 @@ for model in models:
                 bestL.SetBinContent(x,y,histosL[bestregion].GetBinContent(x,y))
                 bestR.SetBinContent(x,y,histosR[bestregion].GetBinContent(x,y))
 
-                if not bestpoint == 0: bestregionP.SetBinContent(x,y,bestregion+1)
+                if not bestpoint == 0: 
+                    bestregionP.SetBinContent(x,y,bestregion+1)
+                    bestefficiency.SetBinContent(x,y,hefficiencies[bestregion].GetBinContent(x,y))
+                    besttheoun.SetBinContent(x,y,hTheoUncs[bestregion].GetBinContent(x,y))
+
         fout = ROOT.TFile(str(model)+"_"+str(scenarioX)+"_"+polschema+"_sigma_UL_bestexpected.root","RECREATE")
 
                     
@@ -234,6 +252,8 @@ for model in models:
         best1m.Write()
         bestobs.Write()
         bestregionP.Write()
+        bestefficiency.Write()
+        besttheoun.Write()
 
         bestL.Write()
         bestR.Write()
