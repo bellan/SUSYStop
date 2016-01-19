@@ -32,6 +32,8 @@
 #include "smoothing/SmoothingUtils.C"
 #include "smoothing/LimitSmoothing.C"
 
+#include "CMS_lumi.h"
+
 
 Bool_t equal(double number, double reference, double tolerance = 1e-3, double epsilon = 1e-6) {
   if ((TMath::Abs(number) < epsilon) && (TMath::Abs(reference) < epsilon))
@@ -578,13 +580,13 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
     hlimit_exp->SetMaximum(1e2);  
     hlimit_exp->SetMinimum(2e-3);  
     c2->SetLogz(1);
-    embellish(hlimit_exp, "m_{#tilde{t}} [GeV]", "m_{LSP} [GeV]","95% CL limit on #sigma");
+    embellish(hlimit_exp, "#it{m}_{#tilde{t}} [GeV]", "#it{m}_{#tilde{#chi^{0}_{1}}} [GeV]","95% CL limit on #sigma");
     // -------------------------------------------------------------------------------------
     h_fake = new TH2F("h_fake", "h_fake", 
 			    hlimit_exp->GetXaxis()->GetNbins()*2, hlimit_exp->GetXaxis()->GetXmin(), hlimit_exp->GetXaxis()->GetXmax(), 
 			    hlimit_exp->GetYaxis()->GetNbins()*2, hlimit_exp->GetYaxis()->GetXmin(), hlimit_exp->GetYaxis()->GetXmax()
 			    );
-    embellish(h_fake, "m_{#tilde{t}} [GeV]", "m_{LSP} [GeV]","95% CL limit on #sigma");
+    embellish(h_fake, "#it{m}_{#tilde{t}} [GeV]", "#it{m}_{#tilde{#chi^{0}_{1}}} [GeV]","95% CL limit on #sigma");
   }
   
   else if(type == "s"){ // s stays for strength
@@ -595,13 +597,13 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
     hlimit_exp = (TH2F*)hlimit_exp_->Clone();
     //hlimit_exp = interpolate(hlimit_exp_,"SW"); hlimit_exp = interpolate(hlimit_exp,"SW"); hlimit_exp = rebin(hlimit_exp,"SW"); //hlimit_exp = rebin(hlimit_exp,"SW"); 
     hlimit_exp->SetMaximum(2.5);
-    embellish(hlimit_exp, "m_{#tilde{t}} [GeV]", "m_{LSP} [GeV]","95% CL limit on #sigma/#sigma_{SUSY}");
+    embellish(hlimit_exp, "#it{m}_{#tilde{t}} [GeV]", "#it{m}_{#tilde{#chi^{0}_{1}}} [GeV]","95% CL limit on #sigma/#sigma_{SUSY}");
     // -------------------------------------------------------------------------------------
     h_fake = new TH2F("h_fake", "h_fake", 
 		      hlimit_exp->GetXaxis()->GetNbins()*2, hlimit_exp->GetXaxis()->GetXmin(), hlimit_exp->GetXaxis()->GetXmax(), 
 		      hlimit_exp->GetYaxis()->GetNbins()*2, hlimit_exp->GetYaxis()->GetXmin(), hlimit_exp->GetYaxis()->GetXmax()
 		      );
-    embellish(h_fake, "m_{#tilde{t}} [GeV]", "m_{LSP} [GeV]","95% CL limit on #sigma/#sigma_{SUSY}"); 
+    embellish(h_fake, "#it{m}_{#tilde{t}} [GeV]", "#it{m}_{#tilde{#chi^{0}_{1}}} [GeV]","95% CL limit on #sigma/#sigma_{SUSY}"); 
   }
   else{
     cout << type << ": unknown type. *** Abort ***"<<endl;
@@ -615,6 +617,63 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
   h_fake->GetXaxis()->SetTitleOffset(hlimit_exp->GetXaxis()->GetTitleOffset()); h_fake->GetYaxis()->SetTitleOffset(hlimit_exp->GetYaxis()->GetTitleOffset());
   
   h_fake->Draw();
+
+  // Fill white holes
+  if(model == "T2tt"){
+
+    hlimit_exp->SetBinContent(2,6,
+			      (hlimit_exp->GetBinContent(2,5)+hlimit_exp->GetBinContent(3,5)+
+			       hlimit_exp->GetBinContent(3,6)+hlimit_exp->GetBinContent(3,7))/4.);
+  }
+
+  if(model == "T2bw"){
+    if(scenarioX == "0p25")
+      hlimit_exp->SetBinContent(1,2,
+				(hlimit_exp->GetBinContent(1,3)+hlimit_exp->GetBinContent(2,3)+hlimit_exp->GetBinContent(2,2)+
+				 hlimit_exp->GetBinContent(1,1)+hlimit_exp->GetBinContent(2,1))/5.);
+
+    if(scenarioX == "0p50"){
+      hlimit_exp->SetBinContent(1,4,
+				(hlimit_exp->GetBinContent(1,3)+hlimit_exp->GetBinContent(2,3)+hlimit_exp->GetBinContent(2,4)+
+				 hlimit_exp->GetBinContent(1,5)+hlimit_exp->GetBinContent(2,5))/5.);
+
+      hlimit_exp->SetBinContent(2,2,
+				(hlimit_exp->GetBinContent(1,1)+hlimit_exp->GetBinContent(1,2)+hlimit_exp->GetBinContent(1,3)+
+				 hlimit_exp->GetBinContent(2,1)+hlimit_exp->GetBinContent(2,3)+
+				 hlimit_exp->GetBinContent(3,1)+hlimit_exp->GetBinContent(3,2)+hlimit_exp->GetBinContent(3,3))/8.);
+    }
+
+    if(scenarioX == "0p75"){
+      hlimit_exp->SetBinContent(1,3,
+				(hlimit_exp->GetBinContent(1,2)+hlimit_exp->GetBinContent(2,2)+hlimit_exp->GetBinContent(2,3)+
+				 hlimit_exp->GetBinContent(1,4))/4.);
+
+      hlimit_exp->SetBinContent(2,4,
+				(hlimit_exp->GetBinContent(1,3)+hlimit_exp->GetBinContent(2,3)+hlimit_exp->GetBinContent(3,3)+
+				 hlimit_exp->GetBinContent(1,4)+hlimit_exp->GetBinContent(3,4)+hlimit_exp->GetBinContent(3,5))/6.);
+
+
+      hlimit_exp->SetBinContent(2,5,
+				(hlimit_exp->GetBinContent(1,4)+hlimit_exp->GetBinContent(2,4)+hlimit_exp->GetBinContent(3,4)+
+				 hlimit_exp->GetBinContent(3,5)+hlimit_exp->GetBinContent(2,6))/5.);
+
+      hlimit_exp->SetBinContent(3,6,
+				(hlimit_exp->GetBinContent(2,5)+hlimit_exp->GetBinContent(3,5)+hlimit_exp->GetBinContent(4,5)+
+				 hlimit_exp->GetBinContent(2,6)+hlimit_exp->GetBinContent(4,6)+
+				 hlimit_exp->GetBinContent(3,7)+hlimit_exp->GetBinContent(4,7))/7.);
+
+      hlimit_exp->SetBinContent(4,8,
+				(hlimit_exp->GetBinContent(3,7)+hlimit_exp->GetBinContent(4,7)+hlimit_exp->GetBinContent(5,7)+
+				 hlimit_exp->GetBinContent(5,8))/4.);
+
+      hlimit_exp->SetBinContent(5,9,
+				(hlimit_exp->GetBinContent(4,8)+hlimit_exp->GetBinContent(5,8)+hlimit_exp->GetBinContent(6,8)+
+				 hlimit_exp->GetBinContent(6,9)+hlimit_exp->GetBinContent(6,10))/5.);
+
+
+    }
+
+  }
 
   hlimit_exp->Draw("same colz0");
   //hlimit_exp->Draw("colz0");
@@ -633,7 +692,7 @@ TCanvas *getExclusionPlot(TFile* file, const TString &model, const TString &scen
   
   //TLegend *leg = new TLegend(0.18,0.77,0.36,0.90);
   //leg->SetTextSize(0.025);
-  TLegend *leg = new TLegend(0.18,0.73,0.36,0.86);
+  TLegend *leg = new TLegend(0.18,0.77,0.36,0.90);
   leg->SetTextSize(0.0325);
   leg->SetFillColor(kWhite);
   leg->SetLineColor(kWhite);
@@ -678,9 +737,11 @@ void makePlots_smoothing(TString model = "T2tt", TString scenarioX = "", TString
   TCanvas* c1 = new TCanvas();
   c1->SetName(model + "_" + scenarioX + "_bestRegion");
   TH2F* hbestRegion     = (TH2F*)file->Get(model + "_" + scenarioX +  "_bestRegion");
-  embellish(hbestRegion, "m_{#tilde{t}} [GeV]", "m_{LSP} [GeV]", "Region");
+  embellish(hbestRegion, "#it{m}_{#tilde{t}} [GeV]", "#it{m}_{#tilde{#chi^{0}_{1}}} [GeV]", "Region");
   hbestRegion->SetTitle("");
 
+  hbestRegion->GetXaxis()->SetTickLength(0.008);
+  hbestRegion->GetYaxis()->SetTickLength(0.008);
   hbestRegion->Draw("col text");
 
   // ----------- Draw text ----------------
@@ -692,29 +753,37 @@ void makePlots_smoothing(TString model = "T2tt", TString scenarioX = "", TString
   
   l.SetNDC();
   
-  if(preliminary){
-    l.DrawLatex(0.20,0.972,"CMS Preliminary");
-  }
-  else l.DrawLatex(0.20,0.972,"CMS");
-  l.DrawLatex(0.17,0.935,"#sqrt{s} = 8 TeV   L = 18.9 fb^{-1}");
-  
+  // if(preliminary){
+  //   l.DrawLatex(0.20,0.972,"CMS Preliminary");
+  // }
+  // else l.DrawLatex(0.20,0.972,"CMS");
+  // l.DrawLatex(0.17,0.935,"#sqrt{s} = 8 TeV   L = 18.9 fb^{-1}");
+
+  CMS_lumi(c1);
+
+  l.SetTextSize(0.04);
+
   TString s_top;
   char *s_LSP = new char[100];
   
   if(model == "T2tt"){
-    s_top = "pp#rightarrow #tilde{t} #tilde{t}*; #tilde{t}#rightarrow t + #tilde{#chi}^{0}_{1}";
-    l.DrawLatex(0.57,0.965,s_top);
+    s_top = "pp#rightarrow #tilde{t} #bar{#tilde{t}}; #tilde{t}#rightarrow t + #tilde{#chi}^{0}_{1}";
+    //l.DrawLatex(0.57,0.965,s_top);
+    l.DrawLatex(0.20,0.95,s_top);
+
   }
   if(model == "T2bw"){
-    s_top = "pp#rightarrow #tilde{t} #tilde{t}*; #tilde{t}#rightarrow b + #tilde{#chi}^{+}; #tilde{#chi}^{+} #rightarrow W^{+} + #tilde{#chi}^{0}_{1}";
+    s_top = "pp#rightarrow #tilde{t} #bar{#tilde{t}}; #tilde{t}#rightarrow b + #tilde{#chi}^{+}; #tilde{#chi}^{+} #rightarrow W^{+} + #tilde{#chi}^{0}_{1}";
     TString scenario = "";
     if(scenarioX == "0p25") scenario = "0.25";
     if(scenarioX == "0p50") scenario = "0.50";
     if(scenarioX == "0p75") scenario = "0.75";
     
-    sprintf(s_LSP,"x = %s",scenario.Data());
-    l.DrawLatex(0.63477,0.935,s_LSP);
-    l.DrawLatex(0.50,0.974,s_top);
+    sprintf(s_LSP,"#it{x} = %s",scenario.Data());
+    //l.DrawLatex(0.63477,0.935,s_LSP);
+    //l.DrawLatex(0.50,0.974,s_top);
+    l.DrawLatex(0.21477,0.930,s_LSP);
+    l.DrawLatex(0.06,0.971,s_top);
   }
 
   c1->SaveAs(".pdf");
@@ -728,7 +797,7 @@ void makePlots_smoothing(TString model = "T2tt", TString scenarioX = "", TString
   c1e->SetName(model + "_" + scenarioX + "_bestEfficiency");
 
   TH2F* hbestEfficiency     = (TH2F*)file->Get(model + "_" + scenarioX +  "_bestEfficiency");
-  embellish(hbestEfficiency, "m_{#tilde{t}} [GeV]", "m_{LSP} [GeV]", "Efficiency");
+  embellish(hbestEfficiency, "#it{m}_{#tilde{t}} [GeV]", "#it{m}_{#tilde{#chi^{0}_{1}}} [GeV]", "Efficiency");
   hbestEfficiency->SetTitle("");
   
   // just for binning
@@ -736,7 +805,7 @@ void makePlots_smoothing(TString model = "T2tt", TString scenarioX = "", TString
 			    hbestEfficiency->GetXaxis()->GetNbins()*2, hbestEfficiency->GetXaxis()->GetXmin(), hbestEfficiency->GetXaxis()->GetXmax(), 
 			    hbestEfficiency->GetYaxis()->GetNbins()*2, hbestEfficiency->GetYaxis()->GetXmin(), hbestEfficiency->GetYaxis()->GetXmax()
 			    );
-  embellish(h_fake, "m_{#tilde{t}} [GeV]", "m_{LSP} [GeV]", "Efficiency" );
+  embellish(h_fake, "#it{m}_{#tilde{t}} [GeV]", "#it{m}_{#tilde{#chi^{0}_{1}}} [GeV]", "Efficiency" );
   h_fake->GetYaxis()->SetRangeUser(0,400);                                           h_fake->GetXaxis()->SetRangeUser(200, model == "T2tt" ? 900 : 800);
   h_fake->GetXaxis()->SetLabelSize(hbestEfficiency->GetXaxis()->GetLabelSize());     h_fake->GetYaxis()->SetLabelSize(hbestEfficiency->GetYaxis()->GetLabelSize());
   h_fake->GetXaxis()->SetLabelOffset(hbestEfficiency->GetXaxis()->GetLabelOffset()); h_fake->GetYaxis()->SetLabelOffset(hbestEfficiency->GetYaxis()->GetLabelOffset());
@@ -745,7 +814,7 @@ void makePlots_smoothing(TString model = "T2tt", TString scenarioX = "", TString
 
   
   cout << "-----------------------------> " <<hbestEfficiency->GetZaxis()->GetTitleOffset() << endl;
-  hbestEfficiency->GetZaxis()->SetTitleOffset(1.65);
+  hbestEfficiency->GetZaxis()->SetTitleOffset(1.5);
 
   h_fake->Draw();
   hbestEfficiency->Draw("same colz0");
@@ -753,15 +822,23 @@ void makePlots_smoothing(TString model = "T2tt", TString scenarioX = "", TString
 
   // ----------- Draw text ----------------
   
-  l.DrawLatex(0.20,0.972,"CMS Unpublished");
-  l.DrawLatex(0.17,0.935,"#sqrt{s} = 8 TeV   L = 18.9 fb^{-1}");
+  CMS_lumi(c1e);
+
+  l.SetTextSize(0.04);
+
+  //l.DrawLatex(0.20,0.972,"CMS Unpublished");
+  //l.DrawLatex(0.17,0.930,"#sqrt{s} = 8 TeV   L = 18.9 fb^{-1}");
 
   if(model == "T2tt"){
-    l.DrawLatex(0.57,0.965,s_top);
+    //l.DrawLatex(0.57,0.965,s_top);
+    l.DrawLatex(0.20,0.95,s_top);
   }
   if(model == "T2bw"){
-    l.DrawLatex(0.63477,0.935,s_LSP);
-    l.DrawLatex(0.50,0.974,s_top);
+    //l.DrawLatex(0.63477,0.935,s_LSP);
+    //l.DrawLatex(0.50,0.974,s_top);
+    l.DrawLatex(0.21477,0.930,s_LSP);
+    l.DrawLatex(0.06,0.971,s_top);
+
   }
 
   c1e->SaveAs(".pdf");
@@ -773,7 +850,7 @@ void makePlots_smoothing(TString model = "T2tt", TString scenarioX = "", TString
   TCanvas* c1u = new TCanvas();
   c1u->SetName(model + "_" + scenarioX + "_bestSysUncertainty");
   TH2F* hbestSysUnc     = (TH2F*)file->Get(model + "_" + scenarioX +  "_bestSysUncertainty");
-  embellish(hbestSysUnc, "m_{#tilde{t}} [GeV]", "m_{LSP} [GeV]", "Relative systematic uncertainty");
+  embellish(hbestSysUnc, "#it{m}_{#tilde{t}} [GeV]", "#it{m}_{#tilde{#chi^{0}_{1}}} [GeV]", "Relative systematic uncertainty");
   hbestSysUnc->SetTitle("");
 
   // just for binning
@@ -781,7 +858,7 @@ void makePlots_smoothing(TString model = "T2tt", TString scenarioX = "", TString
 			    hbestSysUnc->GetXaxis()->GetNbins()*2, hbestSysUnc->GetXaxis()->GetXmin(), hbestSysUnc->GetXaxis()->GetXmax(), 
 			    hbestSysUnc->GetYaxis()->GetNbins()*2, hbestSysUnc->GetYaxis()->GetXmin(), hbestSysUnc->GetYaxis()->GetXmax()
 			    );
-  embellish(h_fakeTU, "m_{#tilde{t}} [GeV]", "m_{LSP} [GeV]", "Relative systematic uncertainty" );
+  embellish(h_fakeTU, "#it{m}_{#tilde{t}} [GeV]", "#it{m}_{#tilde{#chi^{0}_{1}}} [GeV]", "Relative systematic uncertainty" );
   h_fakeTU->GetYaxis()->SetRangeUser(0,400);                                       h_fakeTU->GetXaxis()->SetRangeUser(200, model == "T2tt" ? 900 : 800);
   h_fakeTU->GetXaxis()->SetLabelSize(hbestSysUnc->GetXaxis()->GetLabelSize());     h_fakeTU->GetYaxis()->SetLabelSize(hbestSysUnc->GetYaxis()->GetLabelSize());
   h_fakeTU->GetXaxis()->SetLabelOffset(hbestSysUnc->GetXaxis()->GetLabelOffset()); h_fakeTU->GetYaxis()->SetLabelOffset(hbestSysUnc->GetYaxis()->GetLabelOffset());
@@ -794,15 +871,22 @@ void makePlots_smoothing(TString model = "T2tt", TString scenarioX = "", TString
 
   // ----------- Draw text ----------------
   
-  l.DrawLatex(0.20,0.972,"CMS Unpublished");
-  l.DrawLatex(0.17,0.935,"#sqrt{s} = 8 TeV   L = 18.9 fb^{-1}");
+  //l.DrawLatex(0.20,0.972,"CMS Unpublished");
+  //l.DrawLatex(0.17,0.935,"#sqrt{s} = 8 TeV   L = 18.9 fb^{-1}");
+  
+  CMS_lumi(c1u);
+  l.SetTextSize(0.04);
 
   if(model == "T2tt"){
-    l.DrawLatex(0.57,0.965,s_top);
+    //l.DrawLatex(0.57,0.965,s_top);
+    l.DrawLatex(0.20,0.95,s_top);
   }
   if(model == "T2bw"){
-    l.DrawLatex(0.63477,0.935,s_LSP);
-    l.DrawLatex(0.50,0.974,s_top);
+    //l.DrawLatex(0.63477,0.935,s_LSP);
+    //l.DrawLatex(0.50,0.974,s_top);
+    l.DrawLatex(0.21477,0.930,s_LSP);
+    l.DrawLatex(0.06,0.971,s_top);
+
   }
 
   c1u->SaveAs(".pdf");
@@ -835,12 +919,12 @@ void makePlots_smoothing(TString model = "T2tt", TString scenarioX = "", TString
   //
 
   // Old style, proposal 2
-  l.SetTextSize(0.035);
-  if(preliminary){
-    l.DrawLatex(0.20,0.972,"CMS Preliminary");
-  }
-  else l.DrawLatex(0.20,0.972,"CMS");
-  l.DrawLatex(0.17,0.935,"#sqrt{s} = 8 TeV   L = 18.9 fb^{-1}");
+  //l.SetTextSize(0.035);
+  //if(preliminary){
+  //  l.DrawLatex(0.20,0.972,"CMS Preliminary");
+  //}
+  //else l.DrawLatex(0.20,0.972,"CMS");
+  //l.DrawLatex(0.17,0.935,"#sqrt{s} = 8 TeV   L = 18.9 fb^{-1}");
   //
 
   // Proposal Conveners
@@ -852,16 +936,21 @@ void makePlots_smoothing(TString model = "T2tt", TString scenarioX = "", TString
   // }
   //
 
-  l.SetTextSize(0.035);   // Old style
+  CMS_lumi(c3,2,33);
+  l.SetTextSize(0.04);   // Old style
   //l.SetTextSize(0.05);  // David's proposal
 
   if(model == "T2tt")
-    l.DrawLatex(0.57,0.965,s_top); // Old style
-  //l.DrawLatex(0.33,0.962,s_top); // David's proposal
+    l.DrawLatex(0.20,0.95,s_top); 
+    //l.DrawLatex(0.57,0.965,s_top); // Old style
+    //l.DrawLatex(0.25,0.962,s_top); // David's proposal
+
 
   if(model == "T2bw"){
-    l.DrawLatex(0.63477,0.935,s_LSP); // Old style
-    l.DrawLatex(0.50,0.974,s_top);    // Old style
+    l.DrawLatex(0.21477,0.930,s_LSP); // Old style
+    l.DrawLatex(0.06,0.971,s_top);    // Old style
+    //l.DrawLatex(0.63477,0.935,s_LSP); // Old style
+    //l.DrawLatex(0.50,0.974,s_top);    // Old style
     //l.DrawLatex(0.1,0.962,s_top);  // David's proposal
     //l.DrawLatex(0.75,0.962,s_LSP); // David's proposal
 
@@ -880,13 +969,13 @@ void makePlots_smoothing(TString model = "T2tt", TString scenarioX = "", TString
   // ----------- Draw text ----------------
   
   l.DrawLatex(0.20,0.972,"CMS");
-  l.DrawLatex(0.17,0.935,"#sqrt{s} = 8 TeV   L = 18.9 fb^{-1}");
+  l.DrawLatex(0.17,0.930,"#sqrt{s} = 8 TeV   L = 18.9 fb^{-1}");
   
   if(model == "T2tt")
       l.DrawLatex(0.57,0.965,s_top);
   
   if(model == "T2bw"){
-    l.DrawLatex(0.63477,0.935,s_LSP);
+    l.DrawLatex(0.63477,0.930,s_LSP);
     l.DrawLatex(0.50,0.978,s_top);
   }
 
