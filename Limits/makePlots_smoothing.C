@@ -960,6 +960,81 @@ void makePlots_smoothing(TString model = "T2tt", TString scenarioX = "", TString
   c3->SaveAs(".root");
   // --------------------------------------
 
+
+
+
+
+
+
+  // ------------------ Baseline signal efficiency ------------------
+
+  TCanvas* cBeff = new TCanvas();
+  cBeff->SetName(model + "_" + scenarioX + "_baselineEfficiency");
+
+  TFile *fileBeff  = new TFile("theouncertainty/"+model+"_"+scenarioX+"_Preselection_cvAndSys.root");
+  
+  TH2F* hbaselineEfficiency     = (TH2F*)fileBeff->Get("Efficiency");
+  embellish(hbaselineEfficiency, "#it{m}_{#tilde{t}} [GeV]", "#it{m}_{#tilde{#chi^{0}_{1}}} [GeV]", "Efficiency");
+  hbaselineEfficiency->SetTitle("");
+  
+  // just for binning
+  TH2F * h_fakeBF =  new TH2F("h_fakeBF", "h_fakeBF", 
+			    hbaselineEfficiency->GetXaxis()->GetNbins()*2, hbaselineEfficiency->GetXaxis()->GetXmin(), hbaselineEfficiency->GetXaxis()->GetXmax(), 
+			    hbaselineEfficiency->GetYaxis()->GetNbins()*2, hbaselineEfficiency->GetYaxis()->GetXmin(), hbaselineEfficiency->GetYaxis()->GetXmax()
+			    );
+  embellish(h_fakeBF, "#it{m}_{#tilde{t}} [GeV]", "#it{m}_{#tilde{#chi^{0}_{1}}} [GeV]", "Efficiency" );
+  h_fakeBF->GetYaxis()->SetRangeUser(0,400);                                               h_fakeBF->GetXaxis()->SetRangeUser(200, model == "T2tt" ? 900 : 800);
+  h_fakeBF->GetXaxis()->SetLabelSize(hbaselineEfficiency->GetXaxis()->GetLabelSize());     h_fakeBF->GetYaxis()->SetLabelSize(hbaselineEfficiency->GetYaxis()->GetLabelSize());
+  h_fakeBF->GetXaxis()->SetLabelOffset(hbaselineEfficiency->GetXaxis()->GetLabelOffset()); h_fakeBF->GetYaxis()->SetLabelOffset(hbaselineEfficiency->GetYaxis()->GetLabelOffset());
+  h_fakeBF->GetXaxis()->SetTitleSize(hbaselineEfficiency->GetXaxis()->GetTitleSize());     h_fakeBF->GetYaxis()->SetTitleSize(hbaselineEfficiency->GetYaxis()->GetTitleSize());
+  h_fakeBF->GetXaxis()->SetTitleOffset(hbaselineEfficiency->GetXaxis()->GetTitleOffset()); h_fakeBF->GetYaxis()->SetTitleOffset(hbaselineEfficiency->GetYaxis()->GetTitleOffset());
+
+  
+  cout << "-----------------------------> " <<hbaselineEfficiency->GetZaxis()->GetTitleOffset() << endl;
+  hbaselineEfficiency->GetZaxis()->SetTitleOffset(1.5);
+
+  h_fakeBF->Draw();
+  hbaselineEfficiency->Draw("same colz0");
+  h_fakeBF->Draw("same axis");
+
+  // ----------- Draw text ----------------
+
+  CMS_lumi(cBeff);
+
+  l.SetTextSize(0.04);
+
+  //l.DrawLatex(0.20,0.972,"CMS Unpublished");
+  //l.DrawLatex(0.17,0.930,"#sqrt{s} = 8 TeV   L = 18.9 fb^{-1}");
+
+  if(model == "T2tt"){
+    //l.DrawLatex(0.57,0.965,s_top);
+    l.DrawLatex(0.20,0.95,s_top);
+  }
+  if(model == "T2bw"){
+    //l.DrawLatex(0.63477,0.935,s_LSP);
+    //l.DrawLatex(0.50,0.974,s_top);
+    l.DrawLatex(0.21477,0.930,s_LSP);
+    l.DrawLatex(0.06,0.971,s_top);
+
+  }
+
+  cBeff->SaveAs(".pdf");
+  cBeff->SaveAs(".root");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   return;
 
   // ------ Strength -----
