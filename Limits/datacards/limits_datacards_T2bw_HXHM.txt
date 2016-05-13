@@ -21,7 +21,7 @@ observation 14
 bin                   	 1       1	1	1	1
 process        	      Sign     ttbarWo	Znunu	ttZ	QCD
 process		      	 0       1	2	3	4
-rate           	      	 1	 12.06	1.77	1.72	0.013
+rate           	      	 1	 12.72	1.77	1.72	0.013
 
 ---------------------
 

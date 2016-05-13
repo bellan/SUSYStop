@@ -13,7 +13,7 @@ kmax 5 number of nuisance parameters (sources of systematical uncertainties)
 ##### Observations ####
 
 bin 1
-observation 16
+observation 18
 ---------------------
 
 #### Signal-Backgorund predictions ####
@@ -21,13 +21,12 @@ observation 16
 bin                   	 1       1	1	1	1
 process        	      Sign     ttbarWo	Znunu	ttZ	QCD
 process		      	 0       1	2	3	4
-rate           	      	 1	 19.80	0.69	1.34	0.91
+rate           	      	 1	 8.64	2.3	2.66	0.17
 
 ---------------------
 
 total_Signal	lnN   1.XX	-	-	-	-
-ttbarWo		lnN	-	1.17	-	-	-
-Znunu		lnN	-	-	1.33	-	-
-ttZ		lnN	-	-	-	1.37	-
-QCD		lnN	-	-	-	-	1.64
-
+ttbarWo		lnN	-	1.21	-	-	-
+Znunu		lnN	-	-	1.39	-	-
+ttZ		lnN	-	-	-	1.47	-
+QCD		lnN	-	-	-	-	1.40

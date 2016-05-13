@@ -21,12 +21,12 @@ observation 2
 bin                   	 1       1	1	1	1
 process        	      Sign     ttbarWo	Znunu	ttZ	QCD
 process		      	 0       1	2	3	4
-rate           	      	 1	 1.0	0.59	0.99	0.011
+rate           	      	 1	 1.11	0.59	0.99	0.011
 
 ---------------------
 
 total_Signal	lnN   1.XX	-	-	-	-
-ttbarWo		lnN	-	1.53	-	-	-
+ttbarWo		lnN	-	1.45	-	-	-
 Znunu		lnN	-	-	1.46	-	-
-ttZ		lnN	-	-	-	1.52	-
+ttZ		lnN	-	-	-	1.49	-
 QCD		lnN	-	-	-	-	1.46
